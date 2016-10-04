@@ -1,0 +1,4 @@
+all: TP1.c
+
+tp1.c:
+	gcc -Wall -Wextra TP1.c -o play.bin -lglut

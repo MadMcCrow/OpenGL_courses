@@ -74,3 +74,17 @@ char vertex_shader [] =
 "gl_Position.w = 1.0;"
 "}";
 char Fragment_shader [] = 
+"#version 330 core\n"
+"out vec3 color;"
+"void main()"
+"{"
+"color= vec3(1,0,0);"
+"}";
+application.program_id = loadshaders (vertex)
+if (application.program_id == 0)
+{
+glfwTerminate();
+return 1;
+}
+Gluint vao_id; //VAO porte d'entrée du pipeline : Vertex Array Object != VPO : Vertex Buffer Object
+glGenVertexArrays(1,&)

@@ -177,7 +177,7 @@ void mainloop( void )
     app.state = RUN;
 
 	glClearColor( 0.0f, 0.0f, 0.4f, 0.0f );
-
+    
     glutSetOption(
         GLUT_ACTION_ON_WINDOW_CLOSE,
         GLUT_ACTION_GLUTMAINLOOP_RETURNS
@@ -232,24 +232,8 @@ int init_resources( int *argc, char **argv )
 
     // 4) les shaders
     char vertex_shader[] =
-        "#version 330 core\n"
-        "layout(location = 0) in vec3 vertexPosition_modelspace; \n"
-        "layout(location = 1) in vec3 vertexColor;"
-        "uniform mat4 MVP; \n"
-        "out vec3 fragmentColor; \n"
-        "void main() \n"
-        "{ \n"
-        "  gl_Position = MVP * vec4(vertexPosition_modelspace,1); \n"
-        "  fragmentColor = vertexColor; \n"
-        "} \n";
     char fragment_shader[] =
-        "#version 330 core\n"
-        "in vec3 fragmentColor; \n"
-        "out vec3 color; \n"
-        "void main() \n"
-        "{ \n"
-        "  color = fragmentColor; \n"
-        "} \n";
+        
     app.program_id = load_shaders( vertex_shader, fragment_shader );
     if ( app.program_id == 0 ) return 1;
 
@@ -274,7 +258,7 @@ int init_resources( int *argc, char **argv )
          0.0,  0.0, 0.0,
          0.0,  0.0, 1.0,
          0.0, 0.0, 0.0, // "modele 3D"
-         1.0, 0.0, 0.0,
+         2.0, 0.0, 0.0,
          0.0,  1.0, 0.0,
          0.0, 1.0, 0.0, // "modele 3D"
          1.0, 1.0, 0.0,

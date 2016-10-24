@@ -23,15 +23,13 @@
 FILE *open_readonly(char filename[])
 {
 	FILE* fp = NULL;
-
 	fp = fopen(filename, "r+");
-	if (fichier != NULL)
+	if (fp != NULL)
 		return fp;
 	else{
 		fprintf( stderr, "file cannot be opened %s", filename);
 		return NULL;
 	}
-	return fp;
 }
 
 //return the size of a file. very useful
@@ -43,23 +41,26 @@ int file_size(FILE *fp)
 	return sz;
 }
 
-void read_file(char *file_content, char filename)
+char *read_file(char *file_content, char filename[])
 {
 	FILE* fp = open_readonly(filename);
 	int size = file_size(fp);
-
-	*file_content = malloc(size * sizeof(char));
+	file_content = malloc(sizeof(char) * size);
+	if (file_content == NULL) {
+                fprintf(stderr, "Error allocating memory for line buffer.");
+                exit(1);
+        }
 	unsigned int count = 0;
 	char ch = getc(fp);
-	while ((ch != '\n')
+	while (ch != EOF)
 	       {
 		       file_content[count] = ch;
 		       count++;
 		       ch = getc(fp);
 	       }
-	       fclose(fp);
-	       }
-
+     fclose(fp);
+     return file_content;
+}
 
 /*
    // Deprecated as it was an old approach to the problem. apparently

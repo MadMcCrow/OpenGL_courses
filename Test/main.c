@@ -235,14 +235,14 @@ int init_resources( int *argc, char **argv )
 	if ( glewInit() != GLEW_OK )
 		return 1;
 	// 4) les shaders
-	char *vertex_shader;
-	char *fragment_shader;
-	read_file(char *vertex_shader, "shaders/shader1.glslv");
-	read_file(char *fragment_shader, "shaders/shader1.glslf");
+	char* vertex_shader = NULL;
+	char* fragment_shader = NULL;
+	vertex_shader = read_file(vertex_shader, "shaders/shader1.glslv");
+	fragment_shader = read_file(fragment_shader, "shaders/shader1.glslf");
 	app.program_id = load_shaders( vertex_shader, fragment_shader );
 	// pas besoin de garder les shaders en mémoire.
-	free(*vertex_shader);
-	free(*fragment_shader);
+	free(vertex_shader);
+	free(fragment_shader);
 	//si ça n'a pas marché on se taille.
 	if ( app.program_id == 0 ) return 1;
 
@@ -267,7 +267,7 @@ int init_resources( int *argc, char **argv )
 		0.0, 0.0, 0.0,
 		0.0, 0.0, 1.0,
 		0.0, 0.0, 0.0, // "modele 3D"
-		2.0, 0.0, 0.0,
+		1.0, 0.0, 0.0,
 		0.0, 1.0, 0.0,
 		0.0, 1.0, 0.0, // "modele 3D"
 		1.0, 1.0, 0.0,

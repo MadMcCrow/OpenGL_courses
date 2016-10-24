@@ -6,4 +6,4 @@
 
 FILE *open_readonly(char filename[]);
 int file_size(FILE *fp);
-void read_file(char *file_content, char filename);
+char *read_file(char *file_content, char filename[]);

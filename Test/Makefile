@@ -3,6 +3,7 @@ all:
 	chmod +x ./play.bin
 
 indent:
+	chmod +x ./autoindent.sh
 	./autoindent.sh
 	
 

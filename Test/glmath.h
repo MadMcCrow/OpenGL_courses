@@ -33,8 +33,8 @@ vec4 vec4_product(vec4 a, vec4 b);
 vec4 vec4_mul(vec4 a, Real s);
 
 // matrix from scalars
-mat4 mat4_init(Real m00, Real m01, Real m02, Real m03, Real m10, Real m11, Real m12, Real m13, Real m20, Real m21, Real 
-m22, Real m23, Real m30, Real m31, Real m32, Real m33);
+mat4 mat4_init(Real m00, Real m01, Real m02, Real m03, Real m10, Real m11, Real m12, Real m13, Real m20, Real m21, Real
+	       m22, Real m23, Real m30, Real m31, Real m32, Real m33);
 // matrix from 4 columns
 mat4 mat4_initvec4(vec4 a, vec4 b, vec4 c, vec4 d);
 // matrix with x on diagonal and zero elsewhere

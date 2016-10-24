@@ -4,4 +4,4 @@ done
 for j in $(ls|grep '.h');do
 uncrustify $j --replace -l C
 done
-echo "all files indented, have a good day!"
+echo "all files indented, h"

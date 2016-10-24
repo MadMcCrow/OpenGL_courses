@@ -2,3 +2,7 @@ all:
 	gcc -Wall -Wextra main.c glmath.c glutils.c -o ./play.bin -lm -lGL -lGLEW -lglut
 	chmod +x ./play.bin
 
+indent:
+	./autoindent.sh
+	
+

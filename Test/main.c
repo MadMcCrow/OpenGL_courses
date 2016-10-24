@@ -217,7 +217,7 @@ int init_resources( int *argc, char **argv )
     // 2) creation d'une fenetre
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
     glutInitWindowPosition( 0, 0 );
-    glutInitWindowSize( 1200, 1200 );
+    glutInitWindowSize( 800, 800 );
     app.window_id = glutCreateWindow( "My little space" );
 
     glutKeyboardFunc( my_keyboard_press );
@@ -229,11 +229,15 @@ int init_resources( int *argc, char **argv )
     glewExperimental =  GL_TRUE;
     if ( glewInit() != GLEW_OK )
         return 1;
-
+//TODO add readfiles <------------------------------------------------------------------------
     // 4) les shaders
+    
+    fgetc(shaders_file);
     char vertex_shader[] =
     char fragment_shader[] =
-        
+    fclose(shaders_file);
+    
+       
     app.program_id = load_shaders( vertex_shader, fragment_shader );
     if ( app.program_id == 0 ) return 1;
 

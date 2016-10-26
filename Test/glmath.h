@@ -4,10 +4,20 @@
 #include <GL/gl.h>
 
 typedef GLfloat Real;
-
 typedef union { struct { Real x, y, z; }; struct { Real r, g, b; }; Real row[3]; } vec3;
 typedef union { struct { Real x, y, z, w; }; struct { Real r, g, b, a; }; Real row[4]; } vec4;
 typedef union { vec4 column[4]; Real data[16]; Real matrix[4][4]; } mat4;
+//special additions by PERARD-GAYOT Noé :
+typedef union { struct { float x, y; }; struct { float u, v; }; float row[2]; }vec2;
+//all the vec2 :
+vec2 vec2_zero();
+vec2 vec2_init(Real x, Real y);
+Real vec2_dot(vec2 a, vec2 b);
+Real vec2_length(vec2 a);
+vec2 vec2_plus(vec2 a, vec2 b);
+vec2 vec2_minus(vec2 a, vec2 b);
+vec2 vec2_mul(vec2 a, Real b);
+vec2 vec2_normalize(vec2 a);
 
 vec3 vec3_zero();
 vec3 vec3_init(Real x, Real y, Real z);

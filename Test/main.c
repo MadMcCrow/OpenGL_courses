@@ -258,6 +258,20 @@ int init_resources( int *argc, char **argv )
 	glGenVertexArrays( 1, &app.vertex_array_id );
 	glBindVertexArray( app.vertex_array_id );
 
+char *obj_descr = NULL;
+obj_descr = read_file (obj_descr, "objects/cube.obj");
+//now time to work the data in the file.
+char word[64];
+char ch = obj_descr[0];
+while (ch != ' ');
+{
+
+}
+//while ((ch != '\n') && (ch != EOF)
+
+
+free(obj_descr);
+
 	static const GLfloat g_vertex_buffer_data[] =
 	{
 		1.0, 0.0, 0.0, // base

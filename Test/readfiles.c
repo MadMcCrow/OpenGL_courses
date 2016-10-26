@@ -62,59 +62,6 @@ char *read_file(char *file_content, char filename[])
      return file_content;
 }
 
-/*
-   // Deprecated as it was an old approach to the problem. apparently
-   // it makes more sens to have vertex and fragment shader in separated files.
-   // However, if for any reason it is needed to use a per-line approach,
-   // this is the way to do it.
-
-   //simply read a line
-   const char *readLine(FILE *fp)
-   {
-        int maximumLineLength = 128;
-
-        if (fp == NULL) {
-                fprintf(stderr, "Error: file pointer is null.");
-                exit(1);
-        }
-        char *lineBuffer = (char*)malloc(sizeof(char) * maximumLineLength);
-        if (lineBuffer == NULL) {
-                fprintf(stderr, "Error allocating memory for line buffer.");
-                exit(1);
-        }
-
-        char ch = getc(fp);
-        unsigned int count = 0;
-        while ((ch != '\n') && (ch != EOF)) {
-                if (count == maximumLineLength) {
-                        maximumLineLength += 128;
-                        lineBuffer = realloc(lineBuffer, maximumLineLength);
-                        if (lineBuffer == NULL) {
-                                fprintf(stderr,"Error reallocating space for line buffer.");
-                                exit(1);
-                        }
-                }
-                lineBuffer[count] = ch;
-                count++;
-                ch = getc(fp);
-        }
-    lineBuffer[count] = '\0';
-    realloc(lineBuffer, count + 1);
-    return lineBuffer;
-   }
-
-   //separate vertex shader and vertex shader.
-   void read_shader(char *vertex_shader, char *fragment_shader, FILE *fp)
-   {
-        int size = file_size(fp);
-   *shaders = malloc(size * sizeof(char));
-        if (strcmp(readLine(fp),"//VERTEX SHADER")){
-        while () // basically look for FRAGMENT SHADER
-        {
-        //put this into a single array with '\n' to do the trick.
-        }
-        }
+//now comes the parser :
 
 
-   }
- */

@@ -23,6 +23,7 @@
 FILE *open_readonly(char filename[])
 {
 	FILE* fp = NULL;
+
 	fp = fopen(filename, "r+");
 	if (fp != NULL)
 		return fp;
@@ -45,23 +46,20 @@ char *read_file(char *file_content, char filename[])
 {
 	FILE* fp = open_readonly(filename);
 	int size = file_size(fp);
+
 	file_content = malloc(sizeof(char) * size);
 	if (file_content == NULL) {
-                fprintf(stderr, "Error allocating memory for line buffer.");
-                exit(1);
-        }
+		fprintf(stderr, "Error allocating memory for line buffer.");
+		exit(1);
+	}
 	unsigned int count = 0;
 	char ch = getc(fp);
-	while (ch != EOF)
-	       {
-		       file_content[count] = ch;
-		       count++;
-		       ch = getc(fp);
-	       }
-     fclose(fp);
-     return file_content;
+	while (ch != EOF) {
+		file_content[count] = ch;
+		count++;
+		ch = getc(fp);
+	}
+	fclose(fp);
+	return file_content;
 }
-
-//now comes the parser :
-
 

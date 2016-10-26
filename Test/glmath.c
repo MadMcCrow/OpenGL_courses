@@ -2,7 +2,7 @@
 #include <math.h>
 
 //vec2
-vec2 vec2_init(Real x, Real y,)
+vec2 vec2_init(Real x, Real y, )
 {
 	return (vec2){{ x, y } };
 }
@@ -12,15 +12,15 @@ vec2 vec2_zero()
 	return vec2_init(0.0, 0.0);
 }
 /* ------> I've never seen a cross product in dimension inferior to 3
-vec2 vec2_cross(vec2 a, vec2 b)
-{
-	return vec3_init(
-		       a.y * b.z - a.z * b.y,
-		       a.z * b.x - a.x * b.z,
-		       a.x * b.y - a.y * b.x
-		       );
-}
-*/
+   vec2 vec2_cross(vec2 a, vec2 b)
+   {
+        return vec3_init(
+                       a.y * b.z - a.z * b.y,
+                       a.z * b.x - a.x * b.z,
+                       a.x * b.y - a.y * b.x
+                       );
+   }
+ */
 Real vec2_dot(vec2 a, vec2 b)
 {
 	return a.x * b.x + a.y * b.y;

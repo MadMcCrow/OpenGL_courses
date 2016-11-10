@@ -2,7 +2,6 @@
 #define _GLMATH_H_
 
 #include <GL/gl.h>
-
 typedef GLfloat Real;
 typedef union { struct { Real x, y, z; }; struct { Real r, g, b; }; Real row[3]; } vec3;
 typedef union { struct { Real x, y, z, w; }; struct { Real r, g, b, a; }; Real row[4]; } vec4;

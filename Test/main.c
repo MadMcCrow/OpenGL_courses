@@ -1,6 +1,6 @@
 /* tutoriel 004
  * Tourner autour d'un cube
- * gcc code004.c glutils.c glmath.c -o code004 -lGL -lGLEW -lglut -lm
+ * gcc main.c glutils.c glmath.c -o ./play.bin -lGL -lGLEW -lglut -lm
  */
 
 #ifndef STDLIB_INCLUDED
@@ -20,7 +20,7 @@
 #define READFILES_H
 #include "readfiles.h"
 #endif
-#include "glapp.h"
+//#include "glapp.h"
 
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
@@ -237,10 +237,21 @@ int init_resources( int *argc, char **argv )
 	if ( glewInit() != GLEW_OK )
 		return 1;
 	// 4) les shaders
+	
 	char* vertex_shader = NULL;
 	char* fragment_shader = NULL;
-	vertex_shader = read_file(vertex_shader, "shaders/shader1.glslv");
-	fragment_shader = read_file(fragment_shader, "shaders/shader1.glslf");
+	vertex_shader = read_file(vertex_shader, "./shaders/shader1.glslv");
+	fragment_shader = read_file(fragment_shader, "./shaders/shader1.glslf");
+	int shader_lenght;
+		for (int ptr = 0; fragment_shader[ptr] != '\0'; ptr++)
+	{
+	shader_lenght++;
+	}
+	printf("\n\n\n");
+	printf(fragment_shader);
+	printf("\n\n\n");
+        printf(" length = %d",shader_lenght);
+	printf("\n");
 	app.program_id = load_shaders( vertex_shader, fragment_shader );
 	// pas besoin de garder les shaders en mémoire.
 	free(vertex_shader);
@@ -260,7 +271,7 @@ int init_resources( int *argc, char **argv )
 	glGenVertexArrays( 1, &app.vertex_array_id );
 	glBindVertexArray( app.vertex_array_id );
 
-	char *obj_descr = NULL;
+	/*char *obj_descr = NULL;
 	obj_descr = read_file(obj_descr, "objects/cube.obj");
 //now time to work the data in the file.
 	char word[64];
@@ -273,15 +284,15 @@ int init_resources( int *argc, char **argv )
 
 
 	free(obj_descr);
-
+*/
 	static const GLfloat g_vertex_buffer_data[] =
 	{
 		1.0, 0.0, 0.0, // base
 		0.0, 0.0, 0.0,
-		0.0, 0.0, 0.0,
+		1.0, 1.0, 0.0,
 		0.0, 1.0, 0.0,
+		1.0, 0.0, 0.0,
 		0.0, 0.0, 0.0,
-		0.0, 0.0, 1.0,
 		0.0, 0.0, 0.0, // "modele 3D"
 		1.0, 0.0, 0.0,
 		0.0, 1.0, 0.0,

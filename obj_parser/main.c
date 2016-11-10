@@ -111,7 +111,7 @@ int parse_obj(char *str) {
 	int vert_count = 0;
 	char* ptr = str;
 	while (*ptr) {
-		vert_count += *(ptr++) == 'v' ? 1 : 0; //Noé : si on a v-> on ajoute 1 sinon on ajoute 0
+		vert_count += *(ptr++) == 'v' ? 1 : 0;
 	}
 
 	// Allocate vertices
@@ -160,6 +160,8 @@ int parse_obj(char *str) {
 				verts[cur].normal.row[i] = strtof(ptr, &ptr);
 			}
 			cur_n++;
+		}else if ( ptr[0] == 'f' && isspace(ptr[1]) ){
+		
 		}else {
 		// Something else. Maybe R. Fripp's personal phone number. Gotta check it out!
 			*ptr++; // Nah, JK.

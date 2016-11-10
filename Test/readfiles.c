@@ -36,7 +36,7 @@ FILE *open_readonly(char filename[])
 //return the size of a file. very useful
 int file_size(FILE *fp)
 {
-	fseek(fp, 0L, SEEK_END);        //move forward until the EOF
+	fseek(fp, 0, SEEK_END);        //move forward until the EOF
 	int sz = ftell(fp);
 	rewind(fp);                     //replace the file descriptor to the beginning
 	return sz;
@@ -46,8 +46,7 @@ char *read_file(char *file_content, char filename[])
 {
 	FILE* fp = open_readonly(filename);
 	int size = file_size(fp);
-
-	file_content = malloc(sizeof(char) * size);
+	file_content = malloc(file_size(fp));
 	if (file_content == NULL) {
 		fprintf(stderr, "Error allocating memory for line buffer.");
 		exit(1);
@@ -60,6 +59,17 @@ char *read_file(char *file_content, char filename[])
 		ch = getc(fp);
 	}
 	fclose(fp);
+	int size_test = 0;
+	printf("la taille de %s est %d", filename, size );
+		for (int ptr = 0; file_content[ptr] != '\0'; ptr++)
+	{
+	size_test++;
+	}
+	printf("\n-----------------------------------------------------\n");
+        printf(" length = %d",size_test);
+        printf(" strlen = %d",strlen(file_content));
+        printf(" string = %s",file_content);
+	printf("\n-----------------------------------------------------\n");
 	return file_content;
 }
 

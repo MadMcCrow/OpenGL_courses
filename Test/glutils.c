@@ -23,11 +23,18 @@
 GLuint compile_shader(const char * shader_source, GLenum shader_type)
 {
 	GLuint shader_id = glCreateShader(shader_type);
-
-	glShaderSource(shader_id, 1, &shader_source, NULL);
-
+	GLint shader_lenght = 0;
+	for (int ptr = 0; shader_source[ptr] != '\0'; ptr++)
+	{
+	shader_lenght++;
+	}
+	printf("\n\n\n");
+	printf(shader_source);
+	printf("\n\n\n");
+        printf(" length = %d",shader_lenght);
+	printf("\n");
+	glShaderSource(shader_id, 1, &shader_source, &shader_lenght);
 	glCompileShader(shader_id);
-
 	GLint result = GL_FALSE;
 	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result);
 
@@ -55,7 +62,6 @@ GLuint compile_shader(const char * shader_source, GLenum shader_type)
 		}else printf(" (no information)\n");
 	}
 	if (!result) glDeleteShader(shader_id);
-
 	return result ? shader_id : 0;
 }
 
@@ -63,14 +69,14 @@ GLuint load_shaders(const char * vertex_shader_source, const char * fragment_sha
 {
 	// Create the shaders
 	GLuint vertex_shader_id = compile_shader(vertex_shader_source, GL_VERTEX_SHADER);
-
 	if (vertex_shader_id == 0) return 0;
+	printf("\nstop A\n");
 	GLuint fragment_shader_id = compile_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
+	printf("\nstop B\n");
 	if (fragment_shader_id == 0) {
 		glDeleteShader(vertex_shader_id);
 		return 0;
 	}
-
 	// Link the program
 	GLuint program_id = glCreateProgram();
 	glAttachShader(program_id, vertex_shader_id);

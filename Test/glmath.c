@@ -2,7 +2,7 @@
 #include <math.h>
 
 //vec2
-vec2 vec2_init(Real x, Real y, )
+vec2 vec2_init(Real x, Real y )
 {
 	return (vec2){{ x, y } };
 }

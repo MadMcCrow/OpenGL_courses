@@ -31,17 +31,17 @@ int main_old()
 			// BUG 1: Only the first line is considered as a comment.
 			// New code:
 			while (str[j] != '\n' && str[j] != 0) str[j++] = ' ';
-			/*for (int i = 0; str[i] != '\n'; i++)
-				str[i] = ' ';*/
+		/*for (int i = 0; str[i] != '\n'; i++)
+		        str[i] = ' ';*/
 	}
 
-    // Note:
+	// Note:
 	// strtok is an outdated function of the standard library and has several significant drawbacks:
 	// It is not thread-safe (i.e not parallelizable), not secure (can cause buffer overflows), and is slow.
 	// Besides, you are only interested in splitting a string into different words, which is a simpler task than what strtok does.
 
 	//counting vertices
-	printf("%s",str);
+	printf("%s", str);
 	// BUG 2: Here, pch already points to 'v'; the first line of the for loop body will skip it.
 	pch = strtok(str, " \n");
 	for (int j = 0; j < len; j++ ) {
@@ -55,7 +55,7 @@ int main_old()
 			//if ( strcmp(pch, "v") )
 			// New code:
 			if (!strcmp(pch, "v"))
-				vertex_count++; //just to know how many points there are in the file.
+				vertex_count++;  //just to know how many points there are in the file.
 			pch = strtok(NULL, " ");
 		}
 	}
@@ -101,18 +101,19 @@ int main_old()
 	return 0;
 }
 
-#include <ctype.h>  // For isspace
-#include <assert.h> // For assert
+#include <ctype.h>      // For isspace
+#include <assert.h>     // For assert
 
-int parse_obj(char *str) {
-	
+int parse_obj(char *str)
+{
+
 
 	// Count vertices
 	int vert_count = 0;
 	char* ptr = str;
-	while (*ptr) {
+
+	while (*ptr)
 		vert_count += *(ptr++) == 'v' ? 1 : 0;
-	}
 
 	// Allocate vertices
 	vertex* verts = malloc(sizeof(vertex) * vert_count);
@@ -138,34 +139,29 @@ int parse_obj(char *str) {
 		if (*ptr == 'v' && isspace(ptr[1])) {
 			// We have a vertex, but it might be broken... Beware!
 			ptr++;
-			for (int i = 0; i < 3 && *ptr/* safety first, avoid end of string */; i++) {
+			for (int i = 0; i < 3 && *ptr /* safety first, avoid end of string */; i++)
 				// strtof will write the position of the end of the number back into ptr!
 				verts[cur].position.row[i] = strtof(ptr, &ptr);
-			}
-			cur++;			
-		}
-		else if ( ptr[0] == 'v' && ptr[1] == 't' && isspace(ptr[2])) {
-		// we have a vertex uv vector
-		ptr++;
-			for (int i = 0; i < 2 && *ptr/* safety first, avoid end of string */; i++) {
+			cur++;
+		}else if ( ptr[0] == 'v' && ptr[1] == 't' && isspace(ptr[2])) {
+			// we have a vertex uv vector
+			ptr++;
+			for (int i = 0; i < 2 && *ptr /* safety first, avoid end of string */; i++)
 				// strtof will write the position of the end of the number back into ptr!
 				verts[cur].uv.row[i] = strtof(ptr, &ptr);
-			}
 			cur_t++;
 		}else if ( ptr[0] == 'v' && ptr[1] == 'n' && isspace(ptr[2])) {
-		// we have a vertex normal
-		ptr++;
-			for (int i = 0; i < 3 && *ptr/* safety first, avoid end of string */; i++) {
+			// we have a vertex normal
+			ptr++;
+			for (int i = 0; i < 3 && *ptr /* safety first, avoid end of string */; i++)
 				// strtof will write the position of the end of the number back into ptr!
 				verts[cur].normal.row[i] = strtof(ptr, &ptr);
-			}
 			cur_n++;
-		}else if ( ptr[0] == 'f' && isspace(ptr[1]) ){
-		
-		}else {
-		// Something else. Maybe R. Fripp's personal phone number. Gotta check it out!
+		}else if ( ptr[0] == 'f' && isspace(ptr[1]) ) {
+
+		}else
+			// Something else. Maybe R. Fripp's personal phone number. Gotta check it out!
 			*ptr++; // Nah, JK.
-		}
 	}
 
 	// Assertions: check that we did not break our own rules.
@@ -189,11 +185,13 @@ int parse_obj(char *str) {
 	// Moral of the story:
 	// This code is simpler, easier to understand, and probably faster than the one with strtok.
 	// Additionally, it is more robust to broken inputs (try to give "v v v v v v v" as input to main_old).
-return 0;
+	return 0;
 }
 
-int main() {
+int main()
+{
 	char str[] = "#This is a comment\nv 11.00 12.00 13.10 \nv 15.00 11.20 11.10";
+
 	printf("NEW -----------------------------------------------------\n");
 	parse_obj(str);
 	return 0;

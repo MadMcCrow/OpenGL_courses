@@ -1,14 +1,21 @@
 // Do not forget -std=c99 on old versions (< 5.0) of gcc !!
 //gcc -Wall -Wextra main.c -o ./test.bin -lm
-
+#ifndef STDLIB_INCLUDED
+#define STDLIB_INCLUDED
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#endif
+#ifndef OPENGL_INCLUDED
+#define OPENGL_INCLUDED
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#include "glutils.h"
+#include "glmath.h"
+#endif
 
-typedef union { struct { float x, y, z; }; struct { float r, g, b; }; float row[3]; }vec3;
-typedef union { struct { float x, y; }; struct { float u, v; }; float row[2]; }vec2;
 
-typedef union { struct { int vert_index; int norm_index; int tex_index; }; int index[3]; }face;
+//typedef union { struct { int vert_index; int norm_index; int tex_index; }; int index[3]; }face;
 
 int parse_obj(char *str)
 {
@@ -38,11 +45,11 @@ int parse_obj(char *str)
 		face_count += *(ptr++) == 'f' ? 1 : 0;
 	}
 	// Allocate vertices, face, etc ...
-	face* Faces = malloc(sizeof(face) * face_count);
+	//face* Faces = malloc(sizeof(face) * face_count);
 	vec3* Norms = malloc(sizeof(vec3) * normal_count);
-	vec2* TCoords = malloc(sizeof(vec2) * texcoord);
+	vec2* TCoords = malloc(sizeof(vec2) * texcoord_count);
 	vec3* Verts = malloc(sizeof(vec3) * vert_count);
-	GLfloat vertex_buffer = NULL;
+	GLfloat *vertex_buffer;
 	vertex_buffer = malloc(18 * sizeof(GLfloat));
 	int cur   = 0;
 	int cur_t = 0;
@@ -70,14 +77,14 @@ int parse_obj(char *str)
 			ptr++;
 			for (int i = 0; i < 2 && *ptr /* safety first, avoid end of string */; i++)
 				// strtof will write the position of the end of the number back into ptr!
-				TCoords[cur_t].uv.row[i] = strtof(ptr, &ptr);
+				TCoords[cur_t].row[i] = strtof(ptr, &ptr);
 			cur_t++;
 		}else if ( ptr[0] == 'v' && ptr[1] == 'n' && isspace(ptr[2])) {
 			// we have a vertex normal
 			ptr++;
 			for (int i = 0; i < 3 && *ptr /* safety first, avoid end of string */; i++)
 				// strtof will write the position of the end of the number back into ptr!
-				verts[cur].normal.row[i] = strtof(ptr, &ptr);
+				Norms[cur].row[i] = strtof(ptr, &ptr);
 			cur_n++;
 		}else if ( ptr[0] == 'f' && isspace(ptr[1]) ) {
 			// let's do the faces
@@ -85,6 +92,7 @@ int parse_obj(char *str)
 				// it's a broken face
 				return 0;
 			else{
+			
 				// find realloc use. how to increase the size of malloc. -> this would be easier in C++ with a dynamic table.
 			}
 		}else
@@ -96,11 +104,11 @@ int parse_obj(char *str)
 	assert(cur == vert_count);
 
 // we're having a non indexed approached to the problem in the main function.
-
-
-
-// remember to purge this
-	free(verts);
+// remember to free the memory;
+	free(Norms);
+		free(Verts);
+			free(TCoords);
+			free(vertex_buffer);
 	return 0;
 }
 

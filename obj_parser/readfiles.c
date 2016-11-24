@@ -26,33 +26,35 @@
 //return the size of a file. very useful
 int file_size(char *filename)
 {
-    FILE *fp = fopen(filename, "r");
-    if (fp == 0) return 0;
-    fseek(fp, 0, SEEK_END);        //move forward until the EOF
-    size_t sz = ftell(fp);
-    fclose(fp);
-    return sz;
+	FILE *fp = fopen(filename, "r");
+
+	if (fp == 0) return 0;
+	fseek(fp, 0, SEEK_END);    //move forward until the EOF
+	size_t sz = ftell(fp);
+	fclose(fp);
+	return sz;
 #if 0
-    struct stat buf;
-    fstat(fp, &buf);
-    int size = buf.st_size;
-    return size;
+	struct stat buf;
+	fstat(fp, &buf);
+	int size = buf.st_size;
+	return size;
 #endif
 }
 
 char *read_file(char filename[])
 {
 	int size = file_size(filename);
-        if (size < 1) return NULL;
 
-        char *file_content = malloc(size+1);
-        if (file_content == NULL) return NULL;
-               
+	if (size < 1) return NULL;
+
+	char *file_content = malloc(size + 1);
+	if (file_content == NULL) return NULL;
+
 	FILE* fp = fopen(filename, "r");
 
 	size_t n = fread(file_content, 1, size, fp);
-        file_content[n] = 0;
-        printf("taille predite=%d, lue=%lu\n", size, n);
+	file_content[n] = 0;
+	printf("taille predite=%d, lue=%lu\n", size, n);
 	fclose(fp);
 
 	return file_content;

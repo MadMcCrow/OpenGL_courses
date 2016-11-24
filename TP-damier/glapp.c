@@ -1,8 +1,8 @@
-/* tutoriel 004
+/* basic gl related functions to free main.c to allow for more GAME-ISH things in main.c
  * Tourner autour d'un cube
- * gcc main.c glutils.c glmath.c -o ./play.bin -lGL -lGLEW -lglut -lm
+ * gcc code004.c glutils.c glmath.c -o code004 -lGL -lGLEW -lglut -lm
  */
-
+#include "glmath.h"
 #ifndef STDLIB_INCLUDED
 #define STDLIB_INCLUDED
 #include <stdio.h>
@@ -14,42 +14,12 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "glutils.h"
-#include "glmath.h"
 #endif
 #ifndef READFILES_H
 #define READFILES_H
 #include "readfiles.h"
 #endif
-//#include "glapp.h"
 
-/** Structure de donnees regroupant toutes les valeurs importantes.
- */
-struct Application {
-	// etat de l'application
-	enum { INIT=0, RUN, FINISH } state;
-	// identificateur de la fenetre de dessin
-	int window_id;
-	// identificateur du groupe de shaders
-	GLuint program_id;
-	// identificateur du descripteur de modele 3D
-	GLuint vertex_array_id;
-	// identificateur du buffer de modele 3D
-	GLuint vertex_buffer_id;
-	// identificateur du buffer de teintes
-	GLuint color_buffer_id;
-	// position de la camera
-	vec3 mvp_camera;
-	// position du point vise
-	vec3 mvp_lookat;
-	// reference verticale
-	vec3 mvp_vertical;
-	// matrice de visualisation
-	mat4 mvp_matrix;
-	// matrice de transformation
-	mat4 mvp_model;
-	// connexion avec le vertex shader (point de vue)
-	GLuint mvp_matrix_id;
-} app = { 0 };
 
 void set_mvp( void )
 {
@@ -104,7 +74,7 @@ void my_refresh( void )
 		0,
 		(void*)0
 		);
- 	// attributs de couleur
+	// attributs de couleur
 	glEnableVertexAttribArray( 1 );
 	glBindBuffer(GL_ARRAY_BUFFER, app.color_buffer_id);
 	glVertexAttribPointer(
@@ -116,11 +86,9 @@ void my_refresh( void )
 		(void*)0
 		);
 	// dessiner l'objet...
-	// glDrawArrays( GL_TRIANGLES, 6, 12 * 3 );
-	glDrawElements( GL_TRIANGLES, 3*12, GL_UNSIGNED_INT, (void*)(6*sizeof(GLuint)) );
+	glDrawArrays( GL_TRIANGLES, 6, 12 * 3 );
 	// ... et dessiner la base
-	// glDrawArrays( GL_LINES, 0, 6 );
-	glDrawElements( GL_Triangles, 0, 6 );
+	glDrawArrays( GL_LINES, 0, 6 );
 	// on debranche
 	glDisableVertexAttribArray( 1 );
 	glDisableVertexAttribArray( 0 );
@@ -239,20 +207,10 @@ int init_resources( int *argc, char **argv )
 	if ( glewInit() != GLEW_OK )
 		return 1;
 	// 4) les shaders
-	
 	char* vertex_shader = NULL;
 	char* fragment_shader = NULL;
-	vertex_shader = read_file("./shaders/shader1.glslv");
-	fragment_shader = read_file("./shaders/shader1.glslf");
-	if (vertex_shader == NULL)
-	exit(1);
-	if (fragment_shader == NULL)
-	exit(1);
-	int shader_lenght;
-		for (int ptr = 0; fragment_shader[ptr] != '\0'; ptr++)
-	{
-	shader_lenght++;
-	}
+	vertex_shader = read_file(vertex_shader, "shaders/shader1.glslv");
+	fragment_shader = read_file(fragment_shader, "shaders/shader1.glslf");
 	app.program_id = load_shaders( vertex_shader, fragment_shader );
 	// pas besoin de garder les shaders en mémoire.
 	free(vertex_shader);
@@ -272,25 +230,27 @@ int init_resources( int *argc, char **argv )
 	glGenVertexArrays( 1, &app.vertex_array_id );
 	glBindVertexArray( app.vertex_array_id );
 
-	/*char *obj_descr = NULL;
-	obj_descr = read_file(obj_descr, "objects/cube.obj");
-//now time to work the data in the file.
-	char word[64];
-	char ch = obj_descr[0];
-	while (ch != ' ') ;
-	{
-
+	char *obj_str = NULL;
+	obj_str = read_file(obj_descr, "objects/cube.obj");
+	// Count vertices
+	int vert_count = 0;
+	char* obj_ptr = obj_str;
+	while (*obj_ptr) {
+		vert_count += *(obj_ptr++) == 'v' ? 1 : 0;
 	}
-//while ((ch != '\n') && (ch != EOF)
-
-
+	// Allocate vertices
+	vertex* verts = malloc(sizeof(vertex) * vert_count);
+	parse_obj(*obj_str,*verts, vert_count);
 	free(obj_descr);
-*/
+
 	static const GLfloat g_vertex_buffer_data[] =
 	{
-		0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+		1.0, 0.0, 0.0, // base
+		0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0,
+		0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0,
+		0.0, 0.0, 1.0,
 		0.0, 0.0, 0.0, // "modele 3D"
 		1.0, 0.0, 0.0,
 		0.0, 1.0, 0.0,
@@ -373,23 +333,55 @@ void free_resources( void )
 	glDeleteVertexArrays(1, &app.vertex_array_id);
 }
 
-/** programme principal
- */
-int main( int argc, char **argv )
-{
-	atexit(bye);
 
-	if ( init_resources( &argc, argv ) != 0 ) {
-		fprintf(stderr, "erreur lors de l'initialisation de l'application\n");
-		return 1;
+
+
+int parse_obj(char *str, vertex *verts, int vert_count) {
+	
+	// Read the vertices
+	int cur   = 0;
+	int cur_t = 0;
+	int cur_n = 0;
+	char* ptr = str;
+	while (*ptr) {
+		// Skip spaces
+		while (isspace(*ptr)) ptr++;
+		// Skip comments
+		if (*ptr == '#') {
+			while (*ptr != '\n' && *ptr != 0) ptr++;// There might be some space after that comment, we need to skip it as well.
+			continue;
+		}
+		// At this point, we have a character that is not space nor a comment
+		if (*ptr == 'v' && isspace(ptr[1])) {
+			// We have a vertex, but it might be broken... Beware!
+			ptr++;
+			for (int i = 0; i < 3 && *ptr/* safety first, avoid end of string */; i++) {
+				// strtof will write the position of the end of the number back into ptr!
+				verts[cur].position.row[i] = strtof(ptr, &ptr);
+			}
+			cur++;			
+		}
+		else if ( ptr[0] == 'v' && ptr[1] == 't' && isspace(ptr[2])) {
+		// we have a vertex uv vector
+		ptr++;
+			for (int i = 0; i < 2 && *ptr; i++) {
+				verts[cur].uv.row[i] = strtof(ptr, &ptr);
+			}
+			cur_t++;
+		}else if ( ptr[0] == 'v' && ptr[1] == 'n' && isspace(ptr[2])) {
+		// we have a vertex normal
+		ptr++;
+			for (int i = 0; i < 3 && *ptr; i++) {
+								verts[cur].normal.row[i] = strtof(ptr, &ptr);
+			}
+			cur_n++;
+		}else {
+		// Something else. pass.
+			*ptr++;
+		}
 	}
-
-	mainloop();
-
-	free_resources();
-
-	// that's all folks!
+	assert(cur == vert_count);
+	//assert(cur == cur_n);
 	return 0;
 }
-
 

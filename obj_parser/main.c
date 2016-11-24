@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "readfiles.c"
 
 typedef union { struct { float x, y, z; }; struct { float r, g, b; }; float row[3]; }vec3;
 typedef union { struct { float x, y; }; struct { float u, v; }; float row[2]; }vec2;
@@ -161,7 +162,7 @@ int parse_obj(char *str)
 
 		}else
 			// Something else. Maybe R. Fripp's personal phone number. Gotta check it out!
-			*ptr++; // Nah, JK.
+			*ptr++;  // Nah, JK.
 	}
 
 	// Assertions: check that we did not break our own rules.

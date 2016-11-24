@@ -21,7 +21,7 @@
 #include "readfiles.h"
 #endif
 //#include "glapp.h"
-
+// HeLLO
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
 struct Application {

@@ -9,10 +9,10 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-
+#ifndef GL_included
 #include "glutils.h"
 #include "glmath.h"
-
+#endif
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
 struct Application
@@ -108,7 +108,7 @@ void my_keyboard( unsigned char key, int x, int y, int action )
 	case 'q': if (action)
             {
                 app.mvp_camera =
-                vec3_transform(mat4_rotate(-.1, app.mvp_vertical),
+                vec3_transform(mat4_rotate(-0.1, app.mvp_vertical),
                                app.mvp_camera
                               );
                 set_mvp();
@@ -278,10 +278,8 @@ int init_resources( int *argc, char **argv )
      0, 2, //y
      0, 3, //z
      // 6..41 : triangles.
-      4, 7, 6,
-      4, 6, 5,
-     11, 8, 9,
-     11, 9, 10,
+      4, 7, 6,      4, 6, 5,
+     11, 8, 9,     11, 9, 10,
      //etc...
      };
      

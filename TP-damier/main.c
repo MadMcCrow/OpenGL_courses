@@ -9,10 +9,10 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#ifndef GL_included
+
 #include "glutils.h"
 #include "glmath.h"
-#endif
+
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
 struct Application
@@ -105,20 +105,29 @@ void my_keyboard( unsigned char key, int x, int y, int action )
 {
     switch(key)
     {
-	case 'q': if (action)
+        case 27:
+        
+         // <Escape>
+            glutLeaveMainLoop(); // freeglut
+            break;
+
+	case 'q':
+	
+	if (action)
             {
                 app.mvp_camera =
-                vec3_transform(mat4_rotate(-0.1, app.mvp_vertical),
+                vec3_transform(mat4_rotate(-.1, app.mvp_vertical),
                                app.mvp_camera
                               );
                 set_mvp();
                 glutPostRedisplay();
-                break;
-            };     
-        case 27: // <Escape>
-            glutLeaveMainLoop(); // freeglut
+            };    
             break;
+            
+             
         case 'a':
+        
+        
             if (action)
             {
                 app.mvp_camera =
@@ -127,9 +136,9 @@ void my_keyboard( unsigned char key, int x, int y, int action )
                               );
                 set_mvp();
                 glutPostRedisplay();
-                break;
-            }
-    }
+             }
+           break;
+}
 }
 
 /** touche clavier appuyee
@@ -272,14 +281,50 @@ int init_resources( int *argc, char **argv )
                  g_vertex_buffer_data,
                  GL_STATIC_DRAW
                 );
+     
+    #if 0
+    //modele couleur
+    glGenVertexArrays( 1, &app.vertex_array_id );
+    glBindVertexArray( app.vertex_array_id );
+    
+    
+    static const GLfloat g_vertex_buffer_data[] =
+    {     
+    0.0,  0.0, 0.0,  // 0
+    10.,  0.0, 0.0,  // 1
+    0.0,  10., 0.0,  // 2
+    0.0,  0.0, 10.,  // 3
+    -1.0, -1.0, -1.0, // 4 cube floor
+     1.0, -1.0, -1.0,
+     1.0,  1.0, -1.0,
+    -1.0,  1.0, -1.0,
+    -1.0, -1.0,  1.0, // 8 cube ceiling
+     1.0, -1.0,  1.0,
+     1.0,  1.0,  1.0,
+    -1.0,  1.0,  1.0
+    };
+           
+    glGenBuffers( 1, &app.vertex_buffer_id );
+    glBindBuffer( GL_ARRAY_BUFFER, app.vertex_buffer_id );
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(g_vertex_buffer_data),
+                 g_vertex_buffer_data,
+                 GL_STATIC_DRAW
+                ); 
+     
+     #endif
+     
      static const GLuint indices[]={
      // 0..5: axis
      0, 1, //x
      0, 2, //y
      0, 3, //z
      // 6..41 : triangles.
-      4, 7, 6,      4, 6, 5,
-     11, 8, 9,     11, 9, 10,
+      4, 7, 6,
+      4, 6, 5,
+     11, 8, 9,
+     11, 9, 10,
      //etc...
      };
      

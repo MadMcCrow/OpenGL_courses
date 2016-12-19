@@ -1,11 +1,17 @@
-// Do not forget -std=c99 on old versions (< 5.0) of gcc !!
-//gcc -Wall -Wextra main.c -o ./test.bin -lm
-#ifndef STDLIB_INCLUDED
-#define STDLIB_INCLUDED
+//--------------------------------------------------------------------
+// This code parse a .obj file into the VBO.
+// Very nice indeed.
+// /!\ this code is meant for C99 or C11 only (add -std=99 to GNU-GCC)
+//--------------------------------------------------------------------
+#ifndef STD_LIB
+#define STD_LIB
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #endif
+#include "vla.h"
+#include <ctype.h>
+
 #ifndef OPENGL_INCLUDED
 #define OPENGL_INCLUDED
 #include <GL/glew.h>
@@ -13,156 +19,189 @@
 #include "glutils.h"
 #include "glmath.h"
 #endif
-#include "readfiles.h"
-//TODO: utiliser les machines à états.
 
-bool trychar ( char *str,const char test);
-bool trynum  ( char *str,const char test);
-bool tryvec  ( char *str,const char test);
-bool tryface ( char *str,const char test);
-bool trycom  ( char *str,const char test);
+// sOBJ objects : 
+typedef struct {char name [30];
+		int facecount;
+		int vertcount;
+		int textcount;
+		int normcount;
+		fVLA vertices;
+		fVLA normals;
+		fVLA texcoord;
+		iVLA facindex; }sOBJ;
 
-typedef struct {union { struct { int vert_index; int norm_index; int tex_index; }; int index[3]; }; bool has_uv} face;
+sOBJ sobj_create(sOBJ object){
+		//initialise the VLAs
+	object.vertices  = fvla_create(3); // 3d :x,y,z.
+	object.normals   = fvla_create(3); //
+	object.texcoord  = fvla_create(2); // 2d :u,v.
+	object.facindex  = ivla_create(3); // 3 points.
+	object.vertcount = 0;
+	object.facecount = 0;
+	object.textcount = 0;
+	object.normcount = 0;
+	//send the object.
+	return object;
+}
 
-int parse_obj(char *str)
-{
 
-	// Count vertices
-	int vert_count = 0, face_count = 0, normal_count = 0, texcoord_count = 0;
-	char* ptr = str;
-
-	while (*ptr) {
-		if (*ptr == '#') {
-			while (*ptr != '\n' && *ptr != 0) ptr++;
-			// There might be some space after that comment, we need to skip it as well.
-			continue;
-		}
-		if (*ptr == 'v' && isspace(ptr[1])) {
-			vert_count++;
-			*(ptr++);
-		}
-		if (*ptr == 'v' && ptr[1] == 'n' && isspace(ptr[2])) {
-			normal_count++;
-			*(ptr++);
-		}
-		if (*ptr == 'v' && ptr[1] == 't' && isspace(ptr[2])) {
-			texcoord_count++;
-			*(ptr++);
-		}
-		face_count += *(ptr++) == 'f' ? 1 : 0;
-	}
-	// Allocate vertices, face, etc ...
-	//face* Faces = malloc(sizeof(face) * face_count);
-	vec3* Norms = malloc(sizeof(vec3) * normal_count);
-	vec2* TCoords = malloc(sizeof(vec2) * texcoord_count);
-	vec3* Verts = malloc(sizeof(vec3) * vert_count);
-	//GLfloat *vertex_buffer = calloc(18, 18 * sizeof(GLfloat)); // we want zeros in there.
-	int cur   = 0;
-	int cur_t = 0;
-	int cur_n = 0;
-	//vertex_buffer[3] = 1;
-	//vertex_buffer[10] = 1;
-	//vertex_buffer[17] = 1;
-	ptr = str;
-	printf("started reading\n");
-	while (*ptr) {
-		// Skip spaces
-		while (isspace(*ptr)) ptr++;
-		// Skip comments
-		if (*ptr == '#') {
-			printf("\nskipped comment");
-			while (*ptr != '\n' && *ptr != 0) ptr++;
-			// There might be some space after that comment, we need to skip it as well.
-			continue;
-		}
-		if (*ptr == 'v' && isspace(ptr[1])) {
-			printf("\nfound vertex");
-			// We have a vertex, but it might be broken... Beware!
-			ptr++;
-			for (int i = 0; i < 3 && *ptr /* safety first, avoid end of string */; i++)
-				Verts[cur].row[i] = strtof(ptr, &ptr); // strtof will write the position of the end of the number back into ptr!
-			cur++;
-		}else if ( ptr[0] == 'v' && ptr[1] == 't' && isspace(ptr[2])) {
-		printf("\nfound vertex UV");
-			// we have a vertex uv vector
-			ptr=ptr+2;
-			for (int i = 0; i < 2 && *ptr; i++)	
-				TCoords[cur_t].row[i] = strtof(ptr, &ptr);
-			cur_t++;
-		}else if ( ptr[0] == 'v' && ptr[1] == 'n' && isspace(ptr[2])) {
-		printf("\nfound vertex normal");
-			// we have a vertex normal
-			ptr=ptr+2;
-			for (int i = 0; i < 3 && *ptr; i++)
-				Norms[cur].row[i] = strtof(ptr, &ptr);
-			cur_n++;
-			
-			
-		}else if ( ptr[0] == 'f' && isspace(ptr[1]) ) {
-			printf("\nfound face");
-			ptr++;
-			for (int i = 0; i < 3 && *ptr; i++)
-			printf("%d ",strtol(ptr, (char**)NULL, 10));
-			
-			// let's do the faces
-/*
-			if (ptr[1] == '/') {
-				printf("\ninvalid face\n"); // it's a broken face
-				return 0;
-			}else{
-				printf(": valid");
-				}
-				// valid face
-
-				for (int i = 0; i < 3 && *ptr; i++) {
-				
-				}
-					
-				
-					int slash = 0;
-					char buffer[8] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
-					while ( ptr[slash] != '/') {
-						slash++;
-						printf("%d",slash);
-						buffer[slash] = ptr[slash];
-					}
-					printf("buffer is : %s \n", buffer);
-					int index = strtol(buffer, (char**)NULL, 10);
-					if (ptr[1] == '/') {
-						printf("/");
-						ptr++;
-					}
-					printf("\nindex : %d", index);
-					ptr++;
-					}
-					*/
-
-				// find realloc use. how to increase the size of malloc. -> this would be easier in C++ with a dynamic table.
-
-		}else
-			// Something else. Maybe R. Fripp's personal phone number. Gotta check it out!
-			ptr++;  // Nah, JK.
-	}
-
-// assertion. just to be safe.
-// assert(cur == vert_count);
-
-// we're having a non indexed approached to the problem in the main function.
-// remember to free the memory;
-	free(Norms);
-	free(Verts);
-	//free(TCoords);
-	//free(vertex_buffer);
+int sobj_delete(sOBJ object){
+	//clean the VLAs
+	fvla_delete(object.vertices);
+	fvla_delete(object.normals);
+	fvla_delete(object.texcoord);
+	ivla_delete(object.facindex);
 	return 0;
 }
 
-int main()
-{
-	char str[] = "# Blender v2.77 (sub 0) OBJ \n# www.blender.org\no Cube\nv 1.000000 -1.000000 -1.000000\nv 1.000000 -1.000000 1.000000\nv -1.000000 -1.000000 1.000000\nv -1.000000 -1.000000 -1.000000\nv 1.000000 1.000000 -0.999999\nv 0.999999 1.000000 1.000001\nv -1.000000 1.000000 1.000000\nv -1.000000 1.000000 -1.000000\nvn 0.0000 -1.0000 0.0000\nvn 0.0000 1.0000 0.0000\nvn 1.0000 0.0000 0.0000\nvn -0.0000 -0.0000 1.0000\nvn -1.0000 -0.0000 -0.0000\nvn 0.0000 0.0000 -1.0000\nf 2//1 4//1 1//1\nf 8//2 6//2 5//2\nf 5//3 2//3 1//3\nf 6//4 3//4 2//4\nf 3//5 8//5 4//5\nf 1//6 8//6 5//6\nf 2//1 3//1 4//1\nf 8//2 7//2 6//2\nf 5//3 6//3 2//3\nf 6//4 7//4 3//4\nf 3//5 7//5 8//5\nf 1//6 4//6 8//6";
+// export to VBO and EBO
+GLfloat* vbo_create(sOBJ object, GLfloat* vbo){
 
-	printf("\n----------------------start--------------------------\n");
-	parse_obj(str);
-	printf("\n-----------------------end---------------------------\n");
+	vbo = malloc(sizeof(GLfloat) * object.vertcount);
+	if(vbo == NULL)
+	{
+	mem_issue();
+	}
+	vbo = fvla_export(object.vertices, vbo);
+	return vbo;	
+}
+
+GLuint* ebo_create(sOBJ object, GLuint* ebo){
+	ebo = malloc(sizeof(GLuint) * object.facecount);
+	if(ebo == NULL)
+	{
+	mem_issue();
+	}
+	ebo = (unsigned int*)ivla_export(object.facindex, (int*)ebo);
+	return ebo;
+}
+
+void buffer_cleanup(GLfloat* VBD[], GLuint* EBD[], int vbdsize, int ebdsize){
+	for (int i = 0; i<vbdsize; i++)
+	{
+		free(VBD[i]);
+	}
+	for (int i = 0; i<ebdsize; i++)
+	{
+		//free(EBD[i]);
+	}
+}
+
+
+// vertex array read method
+fVLA read_dim (char* line, int dimension, fVLA coords)
+{
+	char* cur = line; // protect from modifying the original content;
+	while (isspace(*cur)) cur++; //spaces
+	for (int i = 0; i < dimension && *cur; i++) {
+		float tmp = strtof(cur, &cur);
+		coords = fvla_fill(coords, tmp);
+		cur++;
+	}
+	return coords;
+}
+
+
+// face array read method
+iVLA read_index (char* line, int select, iVLA index)
+{
+	int count = 0;
+ 	char* cur = line; 
+ 	while (isspace(*cur)) cur++;
+	for (int i = 0; i < 9 && *cur; i++) {
+			int tmp = strtol(cur, &cur, 10); // fun fact: it simply works.
+			cur++;
+			if (count++%3 == select){
+			index = ivla_fill(index, tmp);
+			}
+		}
+	return index;
+}
+
+// parser function.
+int obj_parse(FILE* s, GLfloat* vbo[] , GLuint* ebo[])
+{
+	int objcount = 0;
+	_Bool useo = 0;
+	sOBJ scene[10];                  // we can't have more than 10 objects in the scene.
+	scene[0] = sobj_create(scene[0]);
+	char line[256];                  // a line shouldn't be bigger.
+	while (fgets(line, 256, s)) {
+		char* cur = line;
+		while (isspace(*cur)) cur++;    // spaces.
+		if (*cur == '#') continue;      // comments.
+	
+		switch (*cur) {
+		// by order of likeliness.
+		case 'v':
+			if (*(cur + 1) == ' ') {
+				scene[objcount].vertices = read_dim(line + 1, 3, scene[objcount].vertices); // +1 -> 'v'
+				scene[objcount].vertcount++;
+			}else if (*(cur + 1) == 'n'){
+				scene[objcount].normals = read_dim(line + 2, 3, scene[objcount].normals);   // +2 -> 'vn'
+				scene[objcount].normcount++;
+			}else if (*(cur + 1) == 't'){
+				scene[objcount].texcoord = read_dim(line + 2, 3, scene[objcount].texcoord); // +2 -> 'vt'
+				scene[objcount].textcount++;
+			}
+			break;
+		case 'f':
+			scene[objcount].facindex = read_index(line + 1 ,0, scene[objcount].facindex);
+			scene[objcount].facecount++;
+			break;
+		case 'o':
+			if (useo == 0){
+				useo = 1;
+			}else {
+				objcount++;
+				scene[objcount] = sobj_create(scene[objcount]);
+			}
+			strcpy(scene[objcount].name, strtok(line+1, " "));
+			printf("object : %s \n", scene[objcount].name);
+			break;
+		default:
+			printf("ignored : %s \n", line);
+			break;
+		}
+	}
+	
+	
+	//cleaning.
+	for (int o = 0; o <= objcount; o++){
+	// -----------------------------------------------------------------------------------------
+	// Bon pour une raison que j'ignore, j'ai le droit d'utiliser qu'une
+	// seule des deux lignes qui suivent, sinon j'ai une "segmentation fault"
+	// ce qui est très con.
+	// en bref la première ligne sert à copier les coordonnées de vertex de l'objet 
+	// dans un vbo prêt à être envoyé au GPU.
+	// la deuxième est la destruction pure et simple de l'objet.
+	// 
+	// et je sais vraiment pas pourquoi ( je ne free pas deux fois, 
+	// je ne modifie pas les pointeurs en cours de route, etc...)
+	//
+	// Le pire c'est que si on ne met que l'une des deux, ça marche.
+	//
+	// -----------------------------------------------------------------------------------------
+	vbo[o] = vbo_create(scene[o], vbo[o]);
+	//sobj_delete(scene[o]);
+	}
+return 0;
+}
+
+// main function for test purposes.
+int main(int argc, char **argv )
+{
+	GLfloat* VBD[10]; GLuint* EBD[10];
+	if (argc < 2) {
+		printf("not enought arguments\n");
+		return 0;
+	}
+	char* filename = argv[1];
+	FILE *fp = fopen(filename, "r");
+	
+	obj_parse(fp, VBD, EBD );
+	//buffer_cleanup(VBD, EBD, 1, 1);
 	return 0;
 }
 

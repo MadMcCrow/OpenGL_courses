@@ -16,12 +16,8 @@
 #include "glutils.h"
 #include "glmath.h"
 #endif
-#ifndef READFILES_H
-#define READFILES_H
-#include "readfiles.h"
-#endif
 //#include "glapp.h"
-
+#include "readfiles.h"
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
 struct Application {
@@ -31,24 +27,21 @@ struct Application {
 	int window_id;
 	// identificateur du groupe de shaders
 	GLuint program_id;
-	// identificateur du descripteur de modele 3D
+	// modele
 	GLuint vertex_array_id;
-	// identificateur du buffer de modele 3D
+	// buffer de points
 	GLuint vertex_buffer_id;
-	// identificateur du buffer de teintes
-	GLuint color_buffer_id;
+	// buffer d'indices
+	GLuint element_buffer_id;
+	GLuint element_buffer_count;
 	// position de la camera
-	vec3 mvp_camera;
-	// position du point vise
-	vec3 mvp_lookat;
-	// reference verticale
-	vec3 mvp_vertical;
+	vec3 mvp_camera, mvp_lookat, mvp_vertical;
 	// matrice de visualisation
 	mat4 mvp_matrix;
 	// matrice de transformation
 	mat4 mvp_model;
 	// connexion avec le vertex shader (point de vue)
-	GLuint mvp_matrix_id;
+	GLuint mvp_matrix_id, tint_id;
 } app = { 0 };
 
 void set_mvp( void )
@@ -77,10 +70,9 @@ void set_mvp( void )
  */
 void my_refresh( void )
 {
-	//glEnable( GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
-
-	// on efface la fenetre
+	glEnable( GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+//on efface la fenêtre
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	// on (re)met en place les bons shaders
 	glUseProgram( app.program_id );
@@ -93,38 +85,17 @@ void my_refresh( void )
 		);
 	// on se branche sur la bonne source...
 	glEnableVertexAttribArray( 0 );
-	// ... et on enfonce la prise
 	glBindBuffer( GL_ARRAY_BUFFER, app.vertex_buffer_id );
-	// description de la structure des donnees pour la base
-	glVertexAttribPointer(
-		0, // cf. location in vertex shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0
-		);
- 	// attributs de couleur
-	glEnableVertexAttribArray( 1 );
-	glBindBuffer(GL_ARRAY_BUFFER, app.color_buffer_id);
-	glVertexAttribPointer(
-		1, // cf. location in vertex shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0
-		);
-	// dessiner l'objet...
-	// glDrawArrays( GL_TRIANGLES, 6, 12 * 3 );
-	glDrawElements( GL_TRIANGLES, 3*12, GL_UNSIGNED_INT, (void*)(6*sizeof(GLuint)) );
-	// ... et dessiner la base
-	// glDrawArrays( GL_LINES, 0, 6 );
-	glDrawElements( GL_Triangles, 0, 6 );
-	// on debranche
-	glDisableVertexAttribArray( 1 );
-	glDisableVertexAttribArray( 0 );
-	// on valide l'affichage
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	//dessiner les objets
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app.element_buffer_id);
+	glUniform3f(app.tint_id, 1, 0, 0);
+	//glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, (void*)(6 * sizeof(GLuint)));
+	glUniform3f(app.tint_id, 1, 1, 0);
+	glDrawElements(GL_TRIANGLES, 14* 3, GL_UNSIGNED_INT, (void*)0);
+// on débranche ...
+	glDisableVertexAttribArray(0);
+//on valide l'affichage
 	glutSwapBuffers();
 }
 
@@ -152,8 +123,20 @@ void my_keyboard( unsigned char key, int x, int y, int action )
 					       );
 			set_mvp();
 			glutPostRedisplay();
-			break;
+			
 		}
+		break;
+	case 'q':
+		if (action) {
+			app.mvp_camera =
+				vec3_transform(mat4_rotate(-.1, app.mvp_vertical),
+					       app.mvp_camera
+					       );
+			set_mvp();
+			glutPostRedisplay();
+			
+		}
+		break;
 	}
 }
 
@@ -254,6 +237,7 @@ int init_resources( int *argc, char **argv )
 	shader_lenght++;
 	}
 	app.program_id = load_shaders( vertex_shader, fragment_shader );
+	
 	// pas besoin de garder les shaders en mémoire.
 	free(vertex_shader);
 	free(fragment_shader);
@@ -269,49 +253,24 @@ int init_resources( int *argc, char **argv )
 	set_mvp();
 
 	// 6) le modèle géométrique
+
+
+	//modele couleur
 	glGenVertexArrays( 1, &app.vertex_array_id );
 	glBindVertexArray( app.vertex_array_id );
 
-	/*char *obj_descr = NULL;
-	obj_descr = read_file(obj_descr, "objects/cube.obj");
-//now time to work the data in the file.
-	char word[64];
-	char ch = obj_descr[0];
-	while (ch != ' ') ;
-	{
 
-	}
-//while ((ch != '\n') && (ch != EOF)
-
-
-	free(obj_descr);
-*/
 	static const GLfloat g_vertex_buffer_data[] =
 	{
-		0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-		0.0, 0.0, 0.0, // "modele 3D"
-		1.0, 0.0, 0.0,
-		0.0, 1.0, 0.0,
-		0.0, 1.0, 0.0, // "modele 3D"
-		1.0, 1.0, 0.0,
-		1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, // "modele 3D"
-		1.0, 0.0, 1.0,
-		0.0, 1.0, 1.0,
-		0.0, 1.0, 1.0, // "modele 3D"
-		1.0, 1.0, 1.0,
-		1.0, 0.0, 1.0,
-		0.0, 0.0, 1.0, // "modele 3D"
-		0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0,
-		0.0, 1.0, 1.0, // "modele 3D"
-		0.0, 1.0, 0.0,
-		1.0, 0.0, 1.0,
 
-
-
+		-1.0, -1.0,  -1.0,      // 4 cube floor
+		1.0,  -1.0,  -1.0,
+		1.0,  1.0,   -1.0,
+		-1.0, 1.0,   -1.0,
+		-1.0, -1.0,  1.0,   // 8 cube ceiling
+		1.0,  -1.0,  1.0,
+		1.0,  1.0,   1.0,
+		-1.0, 1.0,   1.0
 	};
 
 	glGenBuffers( 1, &app.vertex_buffer_id );
@@ -323,43 +282,21 @@ int init_resources( int *argc, char **argv )
 		GL_STATIC_DRAW
 		);
 
-	static const GLfloat g_color_buffer_data[] =
-	{
-		1, 0, 0,        // x (rouge)
-		1, 0, 0,
-		0, 1, 0,        // y (vert)
-		0, 1, 0,
-		0, 0, 1,        // z (bleu)
-		0, 0, 1,
-		1, 1, 0,        // objet (YCM)
-		0, 1, 1,
-		1, 0, 1,
-		1, 0, 0, // objet (YCM)
-		1, 0, 0,
-		1, 0, 0,
-		1, 1, 0, // objet (YCM)
-		0, 1, 1,
-		1, 0, 1,
-		1, 1, 0, // objet (YCM)
-		0, 1, 1,
-		1, 0, 1,
-		1, 1, 0, // objet (YCM)
-		0, 1, 1,
-		1, 0, 1,
-		1, 1, 0, // objet (YCM)
-		0, 1, 1,
-		1, 0, 1,
 
+
+	static const c indices[] = {
+		0,  3,	2,
+		0,  2,	1,
+		7, 4,	5,
+		7, 5,	6,
+		//etc...
 	};
 
-	glGenBuffers( 1, &app.color_buffer_id );
-	glBindBuffer( GL_ARRAY_BUFFER, app.color_buffer_id );
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		sizeof(g_color_buffer_data),
-		g_color_buffer_data,
-		GL_STATIC_DRAW
-		);
+	glGenBuffers(1, &app.element_buffer_id);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app.element_buffer_id);
+	app.element_buffer_count = sizeof(indices) / sizeof(*indices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
+	
 
 	return 0;
 }

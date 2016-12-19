@@ -32,12 +32,6 @@ int file_size(char *filename)
     size_t sz = ftell(fp);
     fclose(fp);
     return sz;
-#if 0
-    struct stat buf;
-    fstat(fp, &buf);
-    int size = buf.st_size;
-    return size;
-#endif
 }
 
 char *read_file(char filename[])
@@ -52,9 +46,7 @@ char *read_file(char filename[])
 
 	size_t n = fread(file_content, 1, size, fp);
         file_content[n] = 0;
-        printf("taille predite=%d, lue=%lu\n", size, n);
 	fclose(fp);
-
 	return file_content;
 }
 

@@ -232,7 +232,7 @@ int init_resources( int *argc, char **argv )
 
     // 4) les shaders
     char vertex_shader[] =
-        "#version 330 core\n"
+        "#version 300\n"
         "layout(location = 0) in vec3 vertexPosition_modelspace; \n"
         "layout(location = 1) in vec3 vertexColor;"
         "uniform mat4 MVP; \n"
@@ -243,7 +243,7 @@ int init_resources( int *argc, char **argv )
         "  fragmentColor = vertexColor; \n"
         "} \n";
     char fragment_shader[] =
-        "#version 330 core\n"
+        "#version 300\n"
         "in vec3 fragmentColor; \n"
         "out vec3 color; \n"
         "void main() \n"

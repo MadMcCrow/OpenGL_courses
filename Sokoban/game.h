@@ -1,0 +1,50 @@
+//--------------------------------------------------------------------
+// This code imports a level, using the following conventions: 
+// b: boxes
+// t: target
+// s: start
+// w: wall
+//--------------------------------------------------------------------
+#ifndef GAME_H
+#define GAME_H
+
+#define LVL_WIDTH  25
+#define LVL_HEIGHT 25
+
+typedef struct {
+    int wall    : 1;
+    int box     : 1;
+    int start   : 1;
+    int target  : 1;
+} cell_t;
+
+typedef struct { 
+	char name[25];
+	cell_t cells[LVL_WIDTH * LVL_HEIGHT];
+	int start_row, start_col;
+	int num_walls;
+} level_t;
+
+typedef enum {
+    DIR_UP,
+    DIR_LEFT,
+    DIR_RIGHT,
+    DIR_DOWN
+} dir_t;
+
+// parsing a file containing a level. any level misbuild WILL make this crash.
+bool lvl_parse(level_t* level, FILE *fp);
+
+void lvl_display(const level_t* level, int player_row, int player_col);
+
+bool lvl_load(const char* name, level_t* level);
+
+void dir_to_pos(int* row, int* col, dir_t dir);
+
+bool can_move(const level_t* level, int row, int col, dir_t dir, bool player);
+
+void move(level_t* level, int* row, int* col, dir_t dir);
+
+bool is_winning(const level_t* level);
+
+#endif

@@ -19,7 +19,11 @@
 #include "glutils.h"
 #include "glmath.h"
 #endif
+#ifndef CHECKER_INCLUDED
+#define CHECKER_INCLUDED
 #include "checker.h"
+#endif
+
 /** Structure de donnees regroupant toutes les valeurs importantes.
  */
 struct Application {
@@ -266,7 +270,7 @@ printf("Stop A");
 	GLfloat *g_vertex_buffer_data = NULL;
 	GLuint *indices = NULL;
 	// The Checker generator.
-	int test = Gen_checker(3, 3, g_vertex_buffer_data, indices, 0);
+	int test = Gen_checker(3, 3, g_vertex_buffer_data, indices);
 	if (test == 1)
 		return 1;
 	glGenBuffers( 1, &app.vertex_buffer_id );
@@ -338,7 +342,7 @@ printf("Stop A");
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
 	
 	//freeing the VBOs (Am I supposed to do so ?)
-		free(g_vertex_buffer_data);
+	free(g_vertex_buffer_data);
 	free(indices);
 	return 0;
 
@@ -355,17 +359,39 @@ void free_resources( void )
  */
 int main( int argc, char **argv )
 {
-	atexit(bye);
-
+atexit(bye);
+	int sizeX;
+	int sizeY;
+	if (argc == 3){
+	 sizeX = atoi(argv[1]);
+	 sizeY = atoi(argv[2]);
+	 }else{
+	 sizeX = 3;
+	 sizeY = 3;
+	 }
+	int Vsize = Pre_Checker(sizeX,sizeY);
+	GLfloat g_vertex_buffer_data[Vsize];
+	GLuint indices[(sizeX+1) * (sizeY+1) * 2 * 3];
+	int test = Gen_checker(sizeX, sizeY, g_vertex_buffer_data, indices);
+	if (test == 1) return 1;
+	printf("\n test : \n");
+	for (int i = 0; i < (sizeX+1) * (sizeY+1) * 3; i=i+3){
+	printf("%0.1f, %0.1f, %0.1f  \n", g_vertex_buffer_data[i], g_vertex_buffer_data[i+1], g_vertex_buffer_data[i+2]);
+	}
+	printf("\n it worked !");
+	
+	
+		
+	#if 0
 	if ( init_resources( &argc, argv ) != 0 ) {
 		fprintf(stderr, "erreur lors de l'initialisation de l'application\n");
 		return 1;
 	}
-
+	
 	mainloop();
 
 	free_resources();
-
+	#endif
 	// that's all folks!
 	return 0;
 }

@@ -20,24 +20,42 @@
 #include "checker.h"
 #endif
 
-_Bool Gen_checker_backend(int tx, int ty, GLfloat *vertex, GLuint *indices)
+void mem_issue(void){
+printf("fuck this shit, I'm out !");
+exit(EXIT_FAILURE);
+}
+
+int Pre_Checker(int sizeX, int sizeY){
+ int VertexDim = (sizeX+ 1) * (sizeY + 1) * 3;
+return VertexDim;
+}
+int Gen_checker(int sizeX, int sizeY,  GLfloat * vbo, GLuint * indices)
 {
-	int sizev, sizef;
-
-	sizev = (tx + 1) * (ty + 1);
-	// generate an array of coordinates :
-	vec3* v = malloc(sizev * sizeof(vec3));
-	int pos = 0;
-	for (int i = 0; i < tx + 1; i++) {
-		for (int j = 0; j < ty + 1; j++) {
-			v[pos].row[0] = (float)i;
-			v[pos].row[1] = (float)j;
-		}
-
+	int line = -1;
+	int column  = 0;	
+	for (int i = 0; i < (sizeX+1) * (sizeY+1) * 3; i=i+3){
+		if (column%(sizeX+1) == 0){
+			line++;
+			column =0;
+			}
+		vbo[i]   =(float)column;
+		vbo[i+1] =(float)line;
+		vbo[i+2] = 0.0;
+		column++;	
 	}
+	return 0;
+	// indices : 
+	
+	
+	
+	#if 0
+	int sizev, sizef;
+	sizev = (tx + 1) * (ty + 1);
+
 	// set up the indices :
 	sizef = (tx) * (ty) * 2 * 3;
 	face *f = malloc(sizef * sizeof(int));  // tx * ty * 2 (triangles) * 3 (point) * sizeof(int)
+	if (f == NULL){mem_issue();};
 	pos = 0;
 	int i = 0;
 	while (i < (tx * ty) + tx) {                    // the loop will go through tx*ty cases + tx jumps.
@@ -56,19 +74,10 @@ _Bool Gen_checker_backend(int tx, int ty, GLfloat *vertex, GLuint *indices)
 		//move on to next case :
 		i++;
 	}
-	// we extend the vertex buffer and the indices buffer
-	void *vertex_realloc = realloc(vertex, (sizeof(GLfloat) * 3 * sizev) + (sizeof(GLfloat) * 12));
-	if (vertex_realloc == NULL /*better safe than sorry*/ )
-		return 1;
-	vertex = vertex_realloc;
-	void *indices_realloc = realloc(indices, (sizeof(GLuint) * 3 * sizef) + (sizeof(GLuint) * 6));
-	if (indices_realloc == NULL)
-		return 1;
-	indices = indices_realloc;
 	// Time to load up the vertex buffer :
 	pos = 0;
 	for ( int i = 0; i < sizev * 3 /* because of vec3 */; i++)
-		vertex[i] = v[pos].row[i % 3];
+		vertex_buffer_data[i] = v[pos].row[i % 3];
 	// same for indices :
 	pos = 0;
 	for ( int i = 0; i < sizef; i++)
@@ -78,23 +87,6 @@ _Bool Gen_checker_backend(int tx, int ty, GLfloat *vertex, GLuint *indices)
 	free(f);
 	// since everything run fine :
 	return 0;
+	#endif
 }
 
-
-int Gen_checker(int x, int y, GLfloat * vertex_buffer_data, GLuint * indices, _Bool axes)
-{
-
-	vertex_buffer_data = NULL;
-	indices = NULL;
-	vertex_buffer_data = calloc((size_t)12, sizeof(GLfloat));
-	indices = calloc((size_t)6, sizeof(GLuint));
-	// adding the axes:
-	for (int index = 0; index < 6; index++)
-		indices[index / 2] = index / 2;
-	vertex_buffer_data[3] = 10.0;
-	vertex_buffer_data[7] = 10.0;
-	vertex_buffer_data[11] = 10.0;
-	// generating the array :
-	int gen = Gen_checker_backend(x, y, vertex_buffer_data, indices);
-	return gen;
-}

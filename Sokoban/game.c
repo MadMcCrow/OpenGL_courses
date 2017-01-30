@@ -5,11 +5,6 @@
 // s: start
 // w: wall
 //--------------------------------------------------------------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <assert.h>
 
 #include "game.h"
 
@@ -107,5 +102,19 @@ bool is_winning(const level_t* level) {
     }
     return true;
 }
+
+void init_player(player* p, const level_t* level){
+    p->col    = level->start_col;
+	p->row    = level->start_row;
+	p->turns  = 0;
+	p->forward = DIR_UP;
+	}
+
+
+void act_player(const dir_t dir){   
+    printf("%d \n", (int)dir);
+ 
+}
+
 
 

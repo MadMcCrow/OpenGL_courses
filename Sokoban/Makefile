@@ -1,5 +1,5 @@
 all:
-	gcc -std=c99 -Wall -Wextra -g ./Cglm/glmath.c ./Cglm/glutils.c main.c game.c readfiles.c -o ./play.bin -lGLEW -lglfw -lGL
+	$(CC) -std=c99 -Wall -Wextra -g main.c game.c display.c inputs.c readfiles.c ./Cglm/glmath.c ./Cglm/glutils.c -lGL -lGLEW -lglfw -lm -o ./play.bin
 	chmod +x ./play.bin
 
 indent:
@@ -21,9 +21,9 @@ indent:
 	fi
 	
 test:
-	gcc -std=c99 -Wall -Wextra  main.c game.c readfiles.c -o ./play.bin -lGLEW -lglfw -lGL
+	$(CC) -std=c99 -Wall -Wextra  main.c game.c readfiles.c ./Cglm/glmath.c ./Cglm/glutils.c -o ./play.bin -lGLEW -lglfw -lGL
 	chmod +x ./play.bin
 	valgrind --tool=memcheck --leak-check=yes  ./play.bin level1.lvl
 	
 display:
-	gcc -std=c11 -Wall -Wextra display.c  game.c readfiles.c -g -o ./display.bin ./Cglm/glmath.c ./Cglm/glutils.c -lGL -lGLEW -lglfw -lm
+	$(CC) -std=c11 -Wall -Wextra display.c  game.c readfiles.c -g -o ./display.bin ./Cglm/glmath.c ./Cglm/glutils.c -lGL -lGLEW -lglfw -lm

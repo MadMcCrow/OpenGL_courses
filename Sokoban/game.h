@@ -8,6 +8,12 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <assert.h>
+
 #define LVL_WIDTH  25
 #define LVL_HEIGHT 25
 
@@ -32,6 +38,14 @@ typedef enum {
     DIR_DOWN
 } dir_t;
 
+typedef struct {
+    char name[25];
+    int turns;
+    int points;
+    int row, col;
+    dir_t forward;
+} player;
+
 // parsing a file containing a level. any level misbuild WILL make this crash.
 bool lvl_parse(level_t* level, FILE *fp);
 
@@ -46,5 +60,9 @@ bool can_move(const level_t* level, int row, int col, dir_t dir, bool player);
 void move(level_t* level, int* row, int* col, dir_t dir);
 
 bool is_winning(const level_t* level);
+
+void init_player(player* p, const level_t* level);
+
+void act_player(dir_t dir);
 
 #endif

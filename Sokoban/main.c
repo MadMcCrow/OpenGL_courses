@@ -72,14 +72,16 @@ int main(int argc, char** argv)
         fprintf(stderr, "cannot load level\n");
         return 1;
     }
-
+    
+    // this is the part causing the segfault -> but why ?
     GLuint vao_id;
     glGenVertexArrays(2, &vao_id);
     glBindVertexArray(vao_id);
-    
+   
     glGenBuffers(1, &app.vertex_buffer);
     app.num_points = fill_map_buffer(app.vertex_buffer, &app.level);
-         
+    
+    //     
     //glDisable(GL_CULL_FACE);
     
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -87,7 +89,7 @@ int main(int argc, char** argv)
 
 
     
-    //glfwSetWindowUserPointer(window, &app);
+    glfwSetWindowUserPointer(window, &app);
     
 
 

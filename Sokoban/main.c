@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     app.h = 600;
     app.w = 800;
 
-    GLFWwindow* window = glfwCreateWindow(app.w, app.h, "Hello Triangle", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(app.w, app.h, "Soko-Muslim-BAN ! - Trump wall ultimate version", NULL, NULL);
     if (!window) {
         fprintf(stderr, "ERROR: could not open window with GLFW3\n");
         glfwTerminate();
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    read_glsl(&app, "./shaders/shader2.glslv", "./shaders/shader2.glslf");    
+    read_glsl(&(app.program_id), "./shaders/shader2.glslv", "./shaders/shader2.glslf");    
 
     if (!app.program_id)
     {
@@ -81,7 +81,9 @@ int main(int argc, char** argv)
     glGenBuffers(1, &app.vertex_buffer);
     app.num_points = fill_map_buffer(app.vertex_buffer, &app.level);
     
-    //     
+    //end of the segfault part 
+    
+    
     //glDisable(GL_CULL_FACE);
     
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -91,7 +93,8 @@ int main(int argc, char** argv)
     
     glfwSetWindowUserPointer(window, &app);
     
-
+    //set up the in teture rendering.
+    ready_tex(&app);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -100,7 +103,7 @@ int main(int argc, char** argv)
         app.cam.look_at = vec3_transform(mat4_rotate(.001, app.cam.up), app.cam.look_at);
         set_mvp(&app);
         //
-        display(window, &app);
+        display_tex(window, &app);
 
 
         //inputs processing :        

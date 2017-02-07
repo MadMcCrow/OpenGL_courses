@@ -120,7 +120,7 @@ int fill_map_buffer(GLuint vert_buf, const level_t* level) {
 }
 
 
-void read_glsl(Application* app, const char* glslv, const char* glslf) {
+void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
     char* vertex_shader = NULL;
     char* fragment_shader = NULL;
     vertex_shader = read_file(glslv);
@@ -129,7 +129,7 @@ void read_glsl(Application* app, const char* glslv, const char* glslf) {
     if (fragment_shader == NULL) exit(1);
     int shader_lenght;
     for (int ptr = 0; fragment_shader[ptr] != '\0'; ptr++) shader_lenght++;
-    app->program_id = load_shaders(vertex_shader, fragment_shader);
+    *program_id = load_shaders(vertex_shader, fragment_shader);
     // pas besoin de garder les shaders en mémoire.
     free(vertex_shader);
     free(fragment_shader);
@@ -203,4 +203,152 @@ void cam_player (Application* app, const player* p) {
 
 
 
+//from opengl-tutorial.org go look at tutorial 14 for understanding this part. slightly adapted to this program.
+bool ready_tex(Application* app) {
+    // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+    app->framebuffer = 0;
+    glGenFramebuffers(1, &app->framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, app->framebuffer);
+    
+    // The texture we're going to render to
+    glGenTextures(1, &(app->rendered_texture));
 
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, app->rendered_texture);
+
+    // Give an empty image to OpenGL ( the last "0" )
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, app->w, app->h, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+    // Poor filtering. Needed !
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    
+    // The depth buffer
+    GLuint depthrenderbuffer;
+    glGenRenderbuffers(1, &depthrenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, app->w, app->h);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+    
+    
+    //// Alternative : Depth texture. Slower, but you can sample it later in your shader
+	//GLuint depthTexture;
+	//glGenTextures(1, &depthTexture);
+	//glBindTexture(GL_TEXTURE_2D, depthTexture);
+	//glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT24, 1024, 768, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Set "rendered_texture" as our colour attachement #0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->rendered_texture, 0);
+
+	//// Depth texture alternative : 
+	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+    //if an error occured return false.
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    return false;
+    
+    // bon la en vrai, c'est tout con, 
+    // on créer un carré qui fait tout l'écran sur lequel on va appliquer notre rendu.
+    // c'est le principe de la feuille de papier calque posée sur l'écran.
+
+	// The fullscreen quad's FBO
+	static const GLfloat g_quad_vertex_buffer_data[] = { 
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,
+	};
+
+    // on refait tout le tralala standard pour un objets et ses shaders ;)
+	
+	glGenBuffers(1, &(app->quad.quad_vertexbuffer));
+	glBindBuffer(GL_ARRAY_BUFFER, app->quad.quad_vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+	// Create and compile our GLSL program from the shaders
+    read_glsl(&(app->quad.program_id), "./shaders/Passthrough.glslv", "./shaders/WobblyTexture.glslf");    
+	app->quad.tex_id = glGetUniformLocation(app->quad.program_id, "rendered_texture");
+	app->quad.time_id = glGetUniformLocation(app->quad.program_id, "time");
+
+    // Set the list of draw buffers.
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+
+    return true;
+}
+
+void display_tex(GLFWwindow* window, const Application* app)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, app->framebuffer);
+    glViewport(0,0,app->w,app->h);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       
+    // utilisation des shaders identifiés
+    glUseProgram(app->program_id);
+
+    glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &app->modelviewproj.matrix[0][0] );
+     
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+     // attache les données au contexte
+    glBindBuffer(GL_ARRAY_BUFFER, app->vertex_buffer);
+    glVertexAttribPointer(
+        0,                          // attribute 0 (cf. shader)
+        3,                          // taille
+        GL_FLOAT,                   // type
+        GL_FALSE,                   // normalisé
+        sizeof(float) * 6,          // vertex size
+        (void*)0                    // décalage
+    );
+    glVertexAttribPointer(
+        1,                          // attribute 1 (cf. shader)
+        3,                          // taille
+        GL_FLOAT,                   // type
+        GL_FALSE,                   // normalisé
+        sizeof(float) * 6,          // vertex size
+        (void*)(sizeof(float) * 3)  // décalage
+    );
+    glDrawArrays(GL_TRIANGLES, 0, app->num_points);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0,0,app->w,app->w);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // Use our shader
+    glUseProgram(app->quad.program_id);
+
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->rendered_texture);
+    // Set our "rendered_texture" sampler to user Texture Unit 0
+    glUniform1i(app->quad.tex_id, 0);
+
+    glUniform1f(app->quad.time_id, (float)(glfwGetTime()*10.0f) );
+    
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, app->quad.quad_vertexbuffer);
+    glVertexAttribPointer(
+        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        GL_FLOAT,           // type
+        GL_FALSE,           // normalized?
+        0,                  // stride
+        (void*)0            // array buffer offset
+    );
+
+    // Draw the triangles !
+    glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+    glDisableVertexAttribArray(0);
+
+    glfwSwapBuffers(window);
+}

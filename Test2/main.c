@@ -31,8 +31,7 @@ int main(int argc, char** argv)
     return 1;
     } 
     // 2) creation d'une fenetre
-    // version 3.3
-    
+    // version 3.3    
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -48,7 +47,6 @@ int main(int argc, char** argv)
         glfwTerminate();
     return 1;
    }
-   
     glfwSetWindowCloseCallback(window, close_callback);
     glfwSetKeyCallback(window, key_callback);
 
@@ -59,8 +57,7 @@ int main(int argc, char** argv)
         glfwTerminate();
         return 1;
     }
-
-    read_glsl(&(app.program_id), "./shaders/shader2.glslv", "./shaders/shader2.glslf");    
+    read_glsl(&(app.program_id), "./shaders/std-pos.glslv", "./shaders/std.glslf");    
 
     if (!app.program_id)
     {
@@ -73,7 +70,6 @@ int main(int argc, char** argv)
         return 1;
     }
     
-    // this is the part causing the segfault -> but why ?
     GLuint vao_id;
     glGenVertexArrays(1, &vao_id);
     glBindVertexArray(vao_id);
@@ -86,13 +82,13 @@ int main(int argc, char** argv)
     
     //generating an element array for a box
     GLuint elem[2];
-    gen_box(elem, &app.level,  vec3_init( 15, -15, 1 ),  vec3_init( 1, 0, 1 ));
+    gen_box(elem, &app.level,  vec3_init( 15, -15, 1 ),  vec3_init( 1, 1, 0 ));
     
     
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
     
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     init_mvp(&app);
 
 
@@ -107,8 +103,8 @@ int main(int argc, char** argv)
         double frame_time = glfwGetTime();
         //make the map rotate endlessly ;)
         
-        //app.cam.look_at = vec3_transform(mat4_rotate(.01, app.cam.up), app.cam.look_at);
-        app.cam.look_at = vec3_init( 15, -15, 2);
+        app.cam.look_at = vec3_transform(mat4_rotate(1, app.cam.up), app.cam.look_at);
+        //app.cam.look_at = vec3_init( 15, -15, 2);
         set_mvp(&app);
         
         display(window, &app, elem);

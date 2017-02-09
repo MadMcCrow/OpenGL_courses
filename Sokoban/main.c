@@ -103,8 +103,8 @@ int main(int argc, char** argv)
         double frame_time = glfwGetTime();
         //make the map rotate endlessly ;)
         
-        app.cam.look_at = vec3_transform(mat4_rotate(1, app.cam.up), app.cam.look_at);
-        //app.cam.look_at = vec3_init( 15, -15, 2);
+        //app.cam.look_at = vec3_transform(mat4_rotate(1, app.cam.up), app.cam.look_at);
+        app.cam.look_at = vec3_init( 15, -15, 2);
         set_mvp(&app);
         
         display(window, &app, elem);

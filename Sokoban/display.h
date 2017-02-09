@@ -41,6 +41,7 @@ typedef struct
     Camera cam;
     mat4 model;         // matrice de transformation
     mat4 modelviewproj;
+    mat4 viewproj;
     GLuint matrix_id;   // connexion avec le vertex shader (point de vue)
     quadstats_t quad;
     GLuint rendered_texture;
@@ -58,6 +59,8 @@ void wall_face(float* p, float* c, const float* q, int face);
 
 int gen_box(GLuint elem_buf[2], const level_t* level, vec3 pos, vec3 col);
 
+void draw_box(GLuint element_buffer[2], int n, vec3* array_pos ,GLuint location);
+
 int fill_map_buffer(GLuint vert_buf, const level_t* level);
 
 void read_glsl(GLuint* program_id, const char* glslv, const char* glslf);
@@ -67,6 +70,8 @@ void display(GLFWwindow* window, const Application* app, GLuint* elem_buffer);
 
 //set the viewport
 void set_mvp(Application* app);
+
+void set_vp(Application* app);
 
 //initialise the viewport
 void init_mvp(Application* app);

@@ -177,7 +177,7 @@ void draw_map (GLuint vertex_array, int num_points){
     glDisableVertexAttribArray(0);
     
 }
-void draw_box(GLuint element_buffer[2], int n) {
+void draw_box(GLuint element_buffer[2], int n, vec3* array_pos ,GLuint location) {
     glBindBuffer(GL_ARRAY_BUFFER, element_buffer[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer[1]);
 
@@ -202,9 +202,10 @@ void draw_box(GLuint element_buffer[2], int n) {
     );
     
     // Rendu de notre géométrie
-    
-    
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    for (int i = 0; i < n; i++) {
+        glUniform3f(location, 0, 0,15);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    }
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);
     
@@ -232,9 +233,13 @@ void display(GLFWwindow* window, const Application* app, GLuint* elem_buffer)
 {
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
     glUseProgram(app->program_id);
+    GLuint pos = glGetUniformLocation(app->program_id, "translate");
+    printf("location is : %d \n", pos);
     glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &app->modelviewproj.matrix[0][0] );
     draw_map(app->vertex_buffer, app->num_points);
-    draw_box(elem_buffer,1);
+    vec3 a[1];
+    a[0] = vec3_init(5,-5,3);
+    draw_box(elem_buffer,1, a, pos);
 
         // rendu des buffers
     // Utilisation des données des buffers
@@ -244,10 +249,15 @@ void display(GLFWwindow* window, const Application* app, GLuint* elem_buffer)
 
 //set the viewport
 void set_mvp(Application* app) {
+    app->modelviewproj     = mat4_product(viewproj, app->model);
+}
+
+void set_vp(Application* app) {
     mat4 projection_matrix = mat4_perspective( 3.14159/2, (float)app->w / (float)app->h, .1, 100. );
     mat4 view_matrix       = mat4_lookAt(app->cam.loc, app->cam.look_at, app->cam.up);
-    app->modelviewproj     = mat4_product(mat4_product(projection_matrix, view_matrix), app->model);
+    app->viewproj          = mat4_product(projection_matrix, view_matrix);
 }
+
 
 //initialise the viewport
 void init_mvp(Application* app) {
@@ -256,6 +266,7 @@ void init_mvp(Application* app) {
     app->cam.loc       = vec3_init( 2.5,   -2.5, 2.0 );
     app->cam.look_at   = vec3_init( 12.5, -12.5, 0 );
     app->cam.up        = vec3_init( 0, 0, 1 );
+    set_vp(app);
     set_mvp(app);
 }
 

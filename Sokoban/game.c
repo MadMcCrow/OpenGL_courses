@@ -13,6 +13,7 @@ bool lvl_parse(level_t* level, FILE *fp){
 	int row = 0;
 	int col = 0;
     level->num_walls = 0;
+    level->num_boxes = 0;
 	memset(level->cells, 0, sizeof(cell_t) * LVL_WIDTH * LVL_HEIGHT);
 	while (row < LVL_HEIGHT) {
 		int c = fgetc(fp);
@@ -25,7 +26,7 @@ bool lvl_parse(level_t* level, FILE *fp){
 		
 		switch (c) {
 			case 'w': cell->wall   = 1; level->num_walls++; break;
-			case 'b': cell->box    = 1; break;
+			case 'b': cell->box    = 1; level->num_boxes++; break;
 			case 't': cell->target = 1; break;
 			case 's':
 			    cell->start  = 1;

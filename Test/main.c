@@ -284,7 +284,7 @@ int init_resources( int *argc, char **argv )
 
 
 
-	static const c indices[] = {
+	static const GLuint indices[] = {
 		0,  3,	2,
 		0,  2,	1,
 		7, 4,	5,

@@ -70,37 +70,64 @@ void wall_face(float* p, float* c, const float* q, int face) {
 }
 
 
-int gen_box(GLuint elem_buf[2], const level_t* level, vec3 pos, vec3 col){
-    glGenBuffers(2, elem_buf);
-    GLfloat box[] =
-    {    
-        -1.00 + pos.x,  1.00 + pos.y, -1.00 + pos.z,     col.r, col.g, col.b,
-        -1.00 + pos.x, -1.00 + pos.y, -1.00 + pos.z,     col.r, col.g, col.b,
-        -1.00 + pos.x,  1.00 + pos.y,  1.00 + pos.z,     col.r, col.g, col.b,
-        -1.00 + pos.x, -1.00 + pos.y,  1.00 + pos.z,     col.r, col.g, col.b,
-         1.00 + pos.x,  1.00 + pos.y,  1.00 + pos.z,     col.r, col.g, col.b,
-         1.00 + pos.x, -1.00 + pos.y,  1.00 + pos.z,     col.r, col.g, col.b,
-         1.00 + pos.x,  1.00 + pos.y, -1.00 + pos.z,     col.r, col.g, col.b,
-         1.00 + pos.x, -1.00 + pos.y, -1.00 + pos.z,     col.r, col.g, col.b
+int fill_dynamic_buffer(GLuint elem_buf[2], const level_t* level){
+    
+    size_t nv = sizeof(GLfloat * 24);
+    static GLfloat box[] =
+    {
+         1.00, -1.00, -1.00,
+         1.00, -1.00,  1.00,
+        -1.00, -1.00,  1.00,
+        -1.00, -1.00, -1.00,
+         1.00,  1.00, -1.00,
+         1.00,  1.00,  1.00,
+        -1.00,  1.00,  1.00,
+        -1.00,  1.00, -1.00
     };
 
+    for (int p = 0; p<=7; p= p+3)
+    {
+        // let's add the value of each values of pos to our vertices :
+        box[p] +=pos.x;
+        box[p+1] +=pos.y;
+        box[p+2] +=pos.z;
+    }
+    size_t ni = sizeof(GLuint * 36);
     static const GLuint indices[] = {
-        0,1,2,2,1,3,
-        4,5,6,6,5,7,
-        3,1,5,5,1,7,
-        0,2,6,6,2,4,
-        6,7,0,0,7,1,
-        2,3,4,4,3,5
+        1, 3, 0,
+        7, 5, 4,
+        4, 1, 0,
+        5, 2, 1,
+        2, 7, 3,
+        0, 7, 4,
+        1, 2, 3,
+        7, 6, 5,
+        4, 5, 1,
+        5, 6, 2,
+        2, 6, 7,
+        0, 3, 7    
     };
-    // Buffer d'informations de vertex
-    glBindBuffer(GL_ARRAY_BUFFER, elem_buf[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(box), box, GL_STATIC_DRAW);
-
-    // Buffer d'indices
+    
+    // prepare the buffer à la bonne taille
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elem_buf[0]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, nv , 0, GL_DYNAMIC_DRAW);
+    // on ouvre la boite :
+    float* vertices = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+    // on met ensuite ce qu'il faut dedans :
+    memcopy( vertices, box, nv)
+    //puis on ferme la porte :
+    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    
+    // on fait pareil pour les indices
+    //glGenBuffers(1, );
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elem_buf[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_DYNAMIC_DRAW);
+    
     return 0;
 }
+
+
+
 
 int fill_map_buffer(GLuint vert_buf, const level_t* level) {
     int num_tiles = LVL_HEIGHT * LVL_WIDTH;
@@ -151,66 +178,6 @@ int fill_map_buffer(GLuint vert_buf, const level_t* level) {
     return num_points;
 }
 
-void draw_map (GLuint vertex_array, int num_points){
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-     // attache les données au contexte
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_array);
-    glVertexAttribPointer(
-        0,                          // attribute 0 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)0                    // décalage
-    );
-    glVertexAttribPointer(
-        1,                          // attribute 1 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)(sizeof(float) * 3)  // décalage
-    );
-    glDrawArrays(GL_TRIANGLES, 0, num_points);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-    
-}
-void draw_box(GLuint element_buffer[2], int n) {
-    glBindBuffer(GL_ARRAY_BUFFER, element_buffer[0]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer[1]);
-
-    // Activation d'utilisation des tableaux
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        0,                          // attribute 0 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)0                    // décalage
-    );
-    glVertexAttribPointer(
-        1,                          // attribute 0 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)(void*)(sizeof(float) * 3)  // décalage
-    );
-    
-    // Rendu de notre géométrie
-    
-    
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-    
-}
-
-
 
 void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
     char* vertex_shader = NULL;
@@ -228,17 +195,38 @@ void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
 }
 
 // fonction de rappel (regénération du contenu)
-void display(GLFWwindow* window, const Application* app, GLuint* elem_buffer)
+void display(GLFWwindow* window, const Application* app)
 {
-    glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+       
+    // utilisation des shaders identifiés
     glUseProgram(app->program_id);
-    glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &app->modelviewproj.matrix[0][0] );
-    draw_map(app->vertex_buffer, app->num_points);
-    draw_box(elem_buffer,1);
 
-        // rendu des buffers
-    // Utilisation des données des buffers
-    
+    glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &app->modelviewproj.matrix[0][0] );
+     
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+     // attache les données au contexte
+    glBindBuffer(GL_ARRAY_BUFFER, app->vertex_buffer);
+    glVertexAttribPointer(
+        0,                          // attribute 0 (cf. shader)
+        3,                          // taille
+        GL_FLOAT,                   // type
+        GL_FALSE,                   // normalisé
+        sizeof(float) * 6,          // vertex size
+        (void*)0                    // décalage
+    );
+    glVertexAttribPointer(
+        1,                          // attribute 1 (cf. shader)
+        3,                          // taille
+        GL_FLOAT,                   // type
+        GL_FALSE,                   // normalisé
+        sizeof(float) * 6,          // vertex size
+        (void*)(sizeof(float) * 3)  // décalage
+    );
+    glDrawArrays(GL_TRIANGLES, 0, app->num_points);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(0);
     glfwSwapBuffers(window);
 }
 
@@ -359,7 +347,7 @@ bool ready_tex(Application* app) {
     return true;
 }
 
-void display_tex(GLFWwindow* window, const Application* app,GLuint* elem_buffer)
+void display_tex(GLFWwindow* window, const Application* app)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebuffer);
     glViewport(0,0,app->w,app->h);
@@ -393,33 +381,11 @@ void display_tex(GLFWwindow* window, const Application* app,GLuint* elem_buffer)
     glDrawArrays(GL_TRIANGLES, 0, app->num_points);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(0);
-
-    
-    // rendu des buffers
-    // Utilisation des données des buffers
-    glBindBuffer(GL_ARRAY_BUFFER, elem_buffer[0]);
-    glVertexPointer( 3, GL_FLOAT, 6 * sizeof(float), 0 );
-    glColorPointer( 3, GL_FLOAT, 6 * sizeof(float), ((float*)NULL + (3)) );
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elem_buffer[1]);
-
-    // Activation d'utilisation des tableaux
-    glEnableClientState( GL_VERTEX_ARRAY );
-    glEnableClientState( GL_COLOR_ARRAY );
-
-    // Rendu de notre géométrie
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-    glDisableClientState( GL_COLOR_ARRAY );
-    glDisableClientState( GL_VERTEX_ARRAY );
-
-
-    // texture rendering :
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0,0,app->w,app->w);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    
     // Use our shader
     glUseProgram(app->quad.program_id);
 

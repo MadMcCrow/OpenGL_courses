@@ -29,6 +29,7 @@ typedef struct {
 	cell_t cells[LVL_WIDTH * LVL_HEIGHT];
 	int start_row, start_col;
 	int num_walls;
+    int num_boxes; //needed for the rendering process.
 } level_t;
 
 typedef enum {

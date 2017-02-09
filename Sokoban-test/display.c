@@ -1,47 +1,20 @@
 // GL : glDrawArrays
 // GLEW : presque tout le reste
 
-// we use libbmpread from chazomaticus, check him out on github.
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include "readfiles.h"
+#include "Cglm/glutils.h"
+#include "Cglm/glmath.h"
+#include "game.h"
+#include "inputs.h"
 #include "display.h"
-#include "obj_loader.h"
 
-
-vec3* gen_array_pos(vec3* pos_array, const level_t lvl, cell_t type){
-    //on génère la position du joueur
-    pos_array[0].x =   lvl.player_col;//x
-    pos_array[0].y = - lvl.player_row; //y
-    pos_array[0].z = 0; // ground level
-    return pos_array;
-}
-
-
-GLuint LoadTexture(const char * bitmap_file) {
-    GLuint texture = 0;
-    bmpread_t bitmap;
-
-    if(!bmpread(bitmap_file, 0, &bitmap))
-    {
-        fprintf(stderr, "%s: error loading bitmap file\n", bitmap_file);
-        exit(1);
-    }
-
-    /* At this point, bitmap.width and .height hold the pixel dimensions of the
-     * file, and bitmap.rgb_data holds the raw pixel data in RGB triplets.
-     */
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, bitmap.width, bitmap.height, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, bitmap.rgb_data);
-
-    bmpread_free(&bitmap);
-
-    return texture;
-}
+//elem_buffer[5] : 0 = Player, 1 = Box, we could have 2 = Ground, 3 = Wall, 4 = Target. 
 
 
 int gen_box(GLuint elem_buf[2], vec3 col){
@@ -76,7 +49,9 @@ int gen_box(GLuint elem_buf[2], vec3 col){
     return 0;
 }
 
-void draw_box(GLuint element_buffer[2], int n, vec3* array_pos) {
+
+
+void draw_box(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* app) {
     glBindBuffer(GL_ARRAY_BUFFER, element_buffer[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer[1]);
 
@@ -101,9 +76,9 @@ void draw_box(GLuint element_buffer[2], int n, vec3* array_pos) {
     );
     
     // Rendu de notre géométrie
-    
     for (int i = 0; i < n; i++) {
-        glUniform3f(0, array_pos[n].x, array_pos[n].y, array_pos[n].z );
+        mat4 mvp = get_mvp(app, mat4_translate(array_pos[i]));
+        glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &mvp.matrix[0][0]);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
     glDisableVertexAttribArray(1);
@@ -111,40 +86,7 @@ void draw_box(GLuint element_buffer[2], int n, vec3* array_pos) {
     
 }
 
-GLuint gen_obj(obj_t o, const char* filename){
-    o = LoadObjAndConvert(filename);
-    return o.vb;
-}
 
-void draw_obj(obj_t object, int n, vec3* array_pos) {
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-     // attache les données au contexte
-    glBindBuffer(GL_ARRAY_BUFFER, object.vb);
-    glVertexAttribPointer(
-        0,                          // attribute 0 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)0                    // décalage
-    );
-    glVertexAttribPointer(
-        1,                          // attribute 1 (cf. shader)
-        3,                          // taille
-        GL_FLOAT,                   // type
-        GL_FALSE,                   // normalisé
-        sizeof(float) * 6,          // vertex size
-        (void*)(sizeof(float) * 3)  // décalage
-    );
-    for (int i = 0; i < n; i++) {
-        glUniform3f(0, array_pos[n].x, array_pos[n].y, array_pos[n].z );
-        glDrawArrays(GL_TRIANGLES, 0, object.num_points);
-    }
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
-    
-}
 
 void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
     char* vertex_shader = NULL;
@@ -153,8 +95,8 @@ void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
     fragment_shader = read_file(glslf);
     if (vertex_shader == NULL) exit(1);
     if (fragment_shader == NULL) exit(1);
-    int shader_lenght;
-    for (int ptr = 0; fragment_shader[ptr] != '\0'; ptr++) shader_lenght++;
+    int shader_length;
+    for (int ptr = 0; fragment_shader[ptr] != '\0'; ptr++) shader_length++;
     *program_id = load_shaders(vertex_shader, fragment_shader);
     // pas besoin de garder les shaders en mémoire.
     free(vertex_shader);
@@ -162,26 +104,55 @@ void read_glsl(GLuint* program_id, const char* glslv, const char* glslf) {
 }
 
 // fonction de rappel (regénération du contenu)
-void display(GLFWwindow* window, const app_t* app, GLuint* elem_buffer, obj_t o) {
+void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2]) {
+
+    static mat4 mvp;
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
     glUseProgram(app->program_id);
-    glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &app->modelviewproj.matrix[0][0] );
-    vec3 arrayofpos[1];
-    arrayofpos[0]=vec3_init(0,0,0);
-    //draw_obj(o,1, arrayofpos);
-    draw_box(elem_buffer, 1, arrayofpos);
-        // rendu des buffers
-    // Utilisation des données des buffers
+
+    mvp = get_mvp(app, mat4_identity()); // mvp centered in 0;
+    glUniformMatrix4fv(app->matrix_id, 1, GL_FALSE, &mvp.matrix[0][0] );
+    
+    // draw the player
+    {
+    vec3 a[1];
+    a[0] = vec3_init(app->player.col,-1 * app->player.row,1);
+    draw_box(elem_buffer[0],1, a, app);
+    }
+    
+    // draw the box
+    {
+    vec3 a[app->level.num_box];
+    int n = 0;
+    for (int row = 0; row < LVL_HEIGHT; row++) {
+        for (int col = 0; col < LVL_WIDTH; col++) {
+            cell_t cell = app->level.cells[LVL_WIDTH * row + col];
+            if (cell.box) 
+            {
+                //printf("col : %d, row: %d \n", col, row);
+                a[n] = vec3_init(col,-1 * row, 1);
+                n++;
+            }
+    }
+    draw_box(elem_buffer[1],1, a, app);
+    }
+    }
+    
     
     glfwSwapBuffers(window);
 }
 
-//set the viewport
-void set_mvp(app_t* app) {
+
+mat4 get_mvp(const app_t* app,mat4 matrix) {
+    return mat4_product(app->viewproj, matrix);
+}
+
+void set_vp(app_t* app) {
     mat4 projection_matrix = mat4_perspective( 3.14159/2, (float)app->w / (float)app->h, .1, 100. );
     mat4 view_matrix       = mat4_lookAt(app->cam.loc, app->cam.look_at, app->cam.up);
-    app->modelviewproj     = mat4_product(mat4_product(projection_matrix, view_matrix), app->model);
+    app->viewproj          = mat4_product(projection_matrix, view_matrix);
 }
+
 
 //initialise the viewport
 void init_mvp(app_t* app) {
@@ -190,7 +161,7 @@ void init_mvp(app_t* app) {
     app->cam.loc       = vec3_init( 2.5,   -2.5, 2.0 );
     app->cam.look_at   = vec3_init( 12.5, -12.5, 0 );
     app->cam.up        = vec3_init( 0, 0, 1 );
-    set_mvp(app);
+    set_vp(app);
 }
 
 void cam_player (app_t* app) {
@@ -202,8 +173,8 @@ void cam_player (app_t* app) {
         case DIR_LEFT:  x =  1; y =  0; break;
         case DIR_RIGHT: x = -1; y =  0; break;
     }
-    app->cam.loc       = vec3_init( app->player.row + 0.5      ,  app->player.col - 0.5     , 0.5 );
-    app->cam.look_at   = vec3_init( app->player.row + 100 * x  ,  app->player.col - 100 * y , 0   );
+    app->cam.loc       = vec3_init( app->player.row + 0.5      , app->player.col - 0.5    , 0.5 );
+    app->cam.look_at   = vec3_init( app->player.row + 100 * x  , app->player.col - 100 * y, 0.0 );
 }
 
 

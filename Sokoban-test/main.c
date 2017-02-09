@@ -69,22 +69,22 @@ int main(int argc, char** argv)
         fprintf(stderr, "cannot load level\n");
         return 1;
     }
+    init_player(&app.player, &app.level); 
     
-    //GLuint vao_id;
-    //glGenVertexArrays(1, &vao_id);
-    //glBindVertexArray(vao_id);
-   
-    //glGenBuffers(1, &app.vertex_buffer);
-    //app.num_points = fill_map_buffer(app.vertex_buffer, &app.level);
-    
-    obj_t o;
-    GLuint vao;
-    vao = gen_obj(o, "objects/cube.obj");
+    // we shouldn't need this, but somehow we do ... #ButWhy
+    GLuint vao_id;
+    glGenVertexArrays(1, &vao_id);
+    glBindVertexArray(vao_id);
+
     
     
     //generating an element array for a box
-    GLuint elem[2];
-    gen_box(elem,  vec3_init( 1, 1, 0 ));
+    GLuint Elements[5][2];
+    gen_box(Elements[0],  vec3_init( 0.8, 0.0, 0.0 )); // player
+    gen_box(Elements[1],  vec3_init( 0.5, 0.5, 0.5 )); // Walls
+    gen_box(Elements[2],  vec3_init( 0.2, 0.2, 0.2 )); // Ground
+    gen_box(Elements[3],  vec3_init( 1.0, 1.0, 0.0 )); // Boxes
+    gen_box(Elements[4],  vec3_init( 0.5, 0.5, 0.0 )); // Targets
     
     
     //glDisable(GL_CULL_FACE);
@@ -92,11 +92,13 @@ int main(int argc, char** argv)
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     init_mvp(&app);
-
+    
 
     
     glfwSetWindowUserPointer(window, &app);
     
+    //set up the in teture rendering.
+    //ready_tex(&app);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -104,10 +106,10 @@ int main(int argc, char** argv)
         //make the map rotate endlessly ;)
         
         //app.cam.look_at = vec3_transform(mat4_rotate(1, app.cam.up), app.cam.look_at);
-        app.cam.look_at = vec3_init( 0, 0, 0);
-        set_mvp(&app);
+        app.cam.look_at = vec3_init( 15, -15, 2);
+        set_vp(&app);
         
-        display(window, &app, elem, o);
+        display(window, &app, Elements);
 
 
         //inputs processing :        
@@ -126,9 +128,3 @@ int main(int argc, char** argv)
     printf("that's all folks!\n");
     return 0;
 }
-
-
-
-
-
-

@@ -122,7 +122,7 @@ void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2]) {
     
     // draw the box
     {
-    vec3 a[app->level.num_box];
+    vec3 a[app->level.num_boxes];
     int n = 0;
     for (int row = 0; row < LVL_HEIGHT; row++) {
         for (int col = 0; col < LVL_WIDTH; col++) {
@@ -134,7 +134,7 @@ void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2]) {
                 n++;
             }
     }
-    draw_box(elem_buffer[1],1, a, app);
+    draw_box(elem_buffer[1],app->level.num_boxes, a, app);
     }
     }
     

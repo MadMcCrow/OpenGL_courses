@@ -9,12 +9,12 @@
 #include "game.h"
 
 // parsing a file containing a level. any level misbuild WILL make this crash.
-bool lvl_parse(level_t* level, FILE *fp){
+bool lvl_parse(level_t* lvl, FILE *fp){
 	int row = 0;
 	int col = 0;
-    level->num_walls = 0;
-    level->num_boxes = 0;
-	memset(level->cells, 0, sizeof(cell_t) * LVL_WIDTH * LVL_HEIGHT);
+    lvl->num_walls = 0;
+    lvl->num_boxes = 0;
+	memset(lvl->cells, 0, sizeof(cell_t) * LVL_WIDTH * LVL_HEIGHT);
 	while (row < LVL_HEIGHT) {
 		int c = fgetc(fp);
 		if (c == EOF) break;
@@ -22,16 +22,16 @@ bool lvl_parse(level_t* level, FILE *fp){
 		if (c == '\n') { row++, col = 0; continue; }
 		
 		if (col >= LVL_WIDTH) continue;
-		cell_t* cell = level->cells + LVL_WIDTH * row + col;
+		cell_t* cell = lvl->cells + LVL_WIDTH * row + col;
 		
 		switch (c) {
-			case 'w': cell->wall   = 1; level->num_walls++; break;
-			case 'b': cell->box    = 1; level->num_boxes++; break;
+			case 'w': cell->wall   = 1; lvl->num_walls++; break;
+			case 'b': cell->box    = 1; lvl->num_boxes++; break;
 			case 't': cell->target = 1; break;
 			case 's':
 			    cell->start  = 1;
-			    level->start_row = row;
-			    level->start_col = col;
+			    lvl->start_row = row;
+			    lvl->start_col = col;
 			    break;
 			case ' ': break;
 			default:
@@ -43,14 +43,14 @@ bool lvl_parse(level_t* level, FILE *fp){
     return true;
 }
 
-void lvl_display(const level_t* level, int player_row, int player_col) {
+void lvl_display(const level_t* lvl) {
     for (int row = 0; row < LVL_HEIGHT; row++) {
         for (int col = 0; col < LVL_WIDTH; col++) {
-            if (player_col == col && player_row == row) {
+            if (lvl->player_col == col && lvl->player_row == row) {
                 printf("p");
                 continue;
             }
-            cell_t cell = level->cells[LVL_WIDTH * row + col];
+            cell_t cell = lvl->cells[LVL_WIDTH * row + col];
             if (cell.wall)        printf("w");
             else if (cell.box)    printf("b");
             else if (cell.target) printf("t");
@@ -104,7 +104,7 @@ bool is_winning(const level_t* level) {
     return true;
 }
 
-void init_player(player* p, const level_t* level){
+void init_player(player_t* p, const level_t* level){
     p->col    = level->start_col;
 	p->row    = level->start_row;
 	p->turns  = 0;
@@ -112,10 +112,15 @@ void init_player(player* p, const level_t* level){
 	}
 
 
-void act_player(const dir_t dir){   
-    printf("%d \n", (int)dir);
- 
+
+bool update_level (const player_t* p , level_t* level){
+    // check if there's nothing where the player will spawn.
+    const cell_t* cell = level->cells + (p->row) * LVL_WIDTH + (p->col);
+           if (cell->wall)         return false;
+            else if (cell->box)    return false;
+            else {
+                level->player_row = p->row;
+                level->player_col = p->col;
+                return true;
 }
-
-
-
+}

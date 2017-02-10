@@ -452,3 +452,15 @@ vec4 vec4_transform( mat4 m, vec4 v )
 			 vec4_inner(R3, v)
 			 );
 }
+
+mat4 mat4_translate(vec3 v)
+{
+    mat4 m = mat4_identity();
+    m.matrix[3][0] = v.x;
+    m.matrix[3][1] = v.y;
+    m.matrix[3][2] = v.z;
+    return m;
+}
+
+
+

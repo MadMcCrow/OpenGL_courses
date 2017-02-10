@@ -19,7 +19,7 @@ typedef struct
     vec3 loc;
     vec3 look_at;
     vec3 up;
-}Camera;
+}cam_t;
 
 typedef struct
 {
@@ -37,53 +37,46 @@ typedef struct
     GLuint framebuffer;
     int num_points;
     level_t level;
+    player_t player;
     int h, w;
-    Camera cam;
+    cam_t cam;
     mat4 model;         // matrice de transformation
-    mat4 modelviewproj;
     mat4 viewproj;
     GLuint matrix_id;   // connexion avec le vertex shader (point de vue)
     quadstats_t quad;
     GLuint rendered_texture;
     GLuint depth_texture;
-} Application;
+    vec3 pseudolight;
+    GLuint pseudolight_id;
+} app_t;
 
 
 
 
+void gen_tile(GLuint elem_buf[2], vec3 col);
 
+void gen_box(GLuint elem_buf[2], vec3 col);
 
-void tile_corner(float* p, float* c, float x, float y, int corner, bool target);
+void draw_elems(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* app);
 
-void wall_face(float* p, float* c, const float* q, int face);
-
-int gen_box(GLuint elem_buf[2], const level_t* level, vec3 pos, vec3 col);
-
-void draw_box(GLuint element_buffer[2], int n, vec3* array_pos ,GLuint location);
-
-int fill_map_buffer(GLuint vert_buf, const level_t* level);
 
 void read_glsl(GLuint* program_id, const char* glslv, const char* glslf);
 
 // fonction de rappel (regénération du contenu)
-void display(GLFWwindow* window, const Application* app, GLuint* elem_buffer);
+void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2]);
 
 //set the viewport
-void set_mvp(Application* app);
+mat4 get_mvp(const app_t* app,mat4 matrix);
 
-void set_vp(Application* app);
+void set_vp(app_t* app);
 
 //initialise the viewport
-void init_mvp(Application* app);
+void init_mvp(app_t* app);
+
+void init_pseudolight(app_t* app, vec3 coord);
 
 // set the camera behind the player
-void cam_player (Application* app, const player* p);
-
-//fonction de préparation du rendu dans une texture
-bool ready_tex(Application* app);
-
-// fonction de rappel de rendu dans une texture.
-void display_tex(GLFWwindow* window, const Application* app, GLuint* elem_buffer);
+void cam_player (app_t* app);
 
 //fonction de calcul des fps.
 float elapsed_time(double last_call);

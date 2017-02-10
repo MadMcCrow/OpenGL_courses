@@ -30,13 +30,14 @@ typedef struct {
 	int start_row, start_col;
 	int num_walls;
     int num_boxes; //needed for the rendering process.
+    int player_row, player_col;
 } level_t;
 
 typedef enum {
     DIR_UP,
     DIR_LEFT,
-    DIR_RIGHT,
-    DIR_DOWN
+    DIR_DOWN,
+    DIR_RIGHT
 } dir_t;
 
 typedef struct {
@@ -45,12 +46,12 @@ typedef struct {
     int points;
     int row, col;
     dir_t forward;
-} player;
+} player_t;
 
 // parsing a file containing a level. any level misbuild WILL make this crash.
 bool lvl_parse(level_t* level, FILE *fp);
 
-void lvl_display(const level_t* level, int player_row, int player_col);
+void lvl_display(const level_t* level);
 
 bool lvl_load(const char* name, level_t* level);
 
@@ -62,8 +63,8 @@ void move(level_t* level, int* row, int* col, dir_t dir);
 
 bool is_winning(const level_t* level);
 
-void init_player(player* p, const level_t* level);
+void init_player(player_t* p, const level_t* level);
 
-void act_player(dir_t dir);
+bool update_level (const player_t* p , level_t* level);
 
 #endif

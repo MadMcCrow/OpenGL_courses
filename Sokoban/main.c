@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    Application app;
+    app_t app;
     app.h = 600;
     app.w = 800;
 
@@ -69,28 +69,35 @@ int main(int argc, char** argv)
         fprintf(stderr, "cannot load level\n");
         return 1;
     }
+    init_player(&app.player, &app.level); 
+    init_pseudolight(&app, vec3_init(-1, 1, -1));
     
+    // we shouldn't need this, but somehow we do ... #ButWhy
     GLuint vao_id;
     glGenVertexArrays(1, &vao_id);
     glBindVertexArray(vao_id);
-   
-    glGenBuffers(1, &app.vertex_buffer);
-    app.num_points = fill_map_buffer(app.vertex_buffer, &app.level);
-    
-    //end of the segfault part 
+
     
     
     //generating an element array for a box
-    GLuint elem[2];
-    gen_box(elem, &app.level,  vec3_init( 15, -15, 1 ),  vec3_init( 1, 1, 0 ));
+    GLuint Elements[5][2];
+    gen_box( Elements[0],  vec3_init( 0.8, 0.0, 0.0 )); // player
+    gen_box( Elements[1],  vec3_init( 0.5, 0.7, 0.5 )); // Boxes
+    gen_tile(Elements[2],  vec3_init( 0.2, 0.2, 0.2 )); // Ground
+    gen_box( Elements[3],  vec3_init( 1.0, 1.0, 0.0 )); // Wall
+    gen_tile(Elements[4],  vec3_init( 0.5, 0.5, 0.0 )); // Targets
     
     
     //glDisable(GL_CULL_FACE);
-    
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LEQUAL);
+
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     init_mvp(&app);
-
+    
 
     
     glfwSetWindowUserPointer(window, &app);
@@ -100,77 +107,52 @@ int main(int argc, char** argv)
 
     while (!glfwWindowShouldClose(window))
     {
+        // start of a new frame:
         double frame_time = glfwGetTime();
-        //make the map rotate endlessly ;)
         
-        //app.cam.look_at = vec3_transform(mat4_rotate(1, app.cam.up), app.cam.look_at);
-        app.cam.look_at = vec3_init( 15, -15, 2);
-        set_mvp(&app);
+        // 1) camera setup
+        //    make the cam be over the player
+        cam_player(&app);
+                
+        //    make the map rotate endlessly ;)
+        //app.cam.loc = vec3_transform(mat4_rotate(0.01, app.cam.up), app.cam.loc);
+        //app.cam.look_at = vec3_init( 15, -15, 2);
         
-        display(window, &app, elem);
+        // 2) game logic
+        
+        update_level(&app.player, &app.level);
+        
+        // check for possible victory
+        if (is_winning(&app.level)) {
+            printf("you won in %d turns\n", app.player.turns);
+            break;
+        }
 
 
-        //inputs processing :        
+        // 3 ) inputs processing :
         
-        //wait for inputs
+        // 3 possible ways
+        // wait for inputs
         //glfwWaitEvents();
-        //wait for inputs for a certain amount of time (s):
+        // wait for inputs for a certain amount of time (s):
         //glfwWaitEventsTimeout(1./25.);
         // see if any inputs have been done:
         glfwPollEvents(); 
-        printf("%0.f fps \n", elapsed_time(frame_time));
+        
+        // 3) render setup
+        
+        set_vp(&app);
+        
+        display(window, &app, Elements);
+        
+        // 4) debug and fps count
+        //GLenum err = glGetError();
+        //if ((int)err != 0) printf("%d", (int)err);
+        //printf("%0.f fps \n", elapsed_time(frame_time));
     }
-
+  
     glfwTerminate();
     // that's all folks!
     printf("that's all folks!\n");
     return 0;
 }
-#if 0 // old main.c maybe still useful
-
-// main function for test purposes.
-int main(int argc, char **argv )
-{
-
-	level_t level;
-	bool ok = lvl_load(argv[1], &level);
-	
-	int player_col = level.start_col;
-	int player_row = level.start_row;
-	int turns = 0;
-	while (true) {
-        lvl_display(&level, player_row, player_col);
-        if (is_winning(&level)) {
-            printf("you won in %d turns\n", turns);
-            break;
-        }
-        dir_t dir;
-        while (true) {
-            printf("up, down, left, right (u,d,l,r)?");
-            int c = getchar();
-            switch (c) {
-                case 'u': dir = DIR_UP;    break;
-                case 'd': dir = DIR_DOWN;  break;
-                case 'l': dir = DIR_LEFT;  break;
-                case 'r': dir = DIR_RIGHT; break;
-                default: continue;
-            }
-            break;
-        }
-
-        if (can_move(&level, player_row, player_col, dir, true)) {
-            move(&level, &player_row, &player_col, dir);
-        } else {
-            printf("cannot move\n");
-        }
-        turns++;
-    }
-	printf("\n%d", ok);
-	return 0;
-}
-#endif
-
-
-
-
-

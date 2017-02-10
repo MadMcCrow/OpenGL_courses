@@ -28,28 +28,24 @@ int main(int argc, char **argv )
             break;
         }
         dir_t dir;
-        dir_t mov;
         while (true) {
             printf("up, down, left, right (u,d,l,r)?");
             int c = getchar();
             switch (c) {
-                case 'u': mov = DIR_UP;    break;
-                case 'd': mov = DIR_DOWN;  break;
-                case 'l': mov = DIR_LEFT;  break;
-                case 'r': mov = DIR_RIGHT; break;
+                case 'u': dir = DIR_UP;    break;
+                case 'd': dir = DIR_DOWN;  break;
+                case 'l': dir = DIR_LEFT;  break;
+                case 'r': dir = DIR_RIGHT; break;
                 default: continue;
             }
-            dir = act_player(mov, &p);
             break;
         }
-        if (mov == DIR_UP){
         if (can_move(&level, p.row, p.col, dir, true)) {
             move(&level, &p.row, &p.col, dir);
         } else {
             printf("cannot move\n");
         }
         p.turns++;
-    }
     }
 	printf("\n%d", ok);
 	return 0;

@@ -83,4 +83,9 @@ vec3 vec3_transform( mat4 m, vec3 v );
 // transform vector
 vec4 vec4_transform( mat4 m, vec4 v );
 
+//special addition for simple easy translate.
+mat4 mat4_translate(vec3 v);
+
+
+
 #endif // _GLMATH_H_

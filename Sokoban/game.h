@@ -24,7 +24,7 @@ typedef struct {
     int target  : 1;
 } cell_t;
 
-typedef struct { 
+typedef struct {
 	char name[25];
 	cell_t cells[LVL_WIDTH * LVL_HEIGHT];
 	int start_row, start_col;
@@ -39,6 +39,7 @@ typedef enum {
     DIR_DOWN,
     DIR_RIGHT
 } dir_t;
+
 
 typedef struct {
     char name[25];

@@ -35,14 +35,19 @@ typedef struct
     GLuint program_id;
     GLuint vertex_buffer;
     GLuint framebuffer;
+    GLuint texture[5]; // up to 5 different textures !
     int num_points;
     level_t level;
     player_t player;
     int h, w;
     cam_t cam;
-    mat4 model;         // matrice de transformation
+    mat4 model;  // yeah I move thing with this
+    mat4 view;   // don't worry it's only for shading ;)
     mat4 viewproj;
-    GLuint matrix_id;   // connexion avec le vertex shader (point de vue)
+    GLuint m4mvp_id;
+    GLuint m4mv_id;
+    GLuint m4v_id;
+    GLuint m4m_id;
     quadstats_t quad;
     GLuint rendered_texture;
     GLuint depth_texture;
@@ -51,7 +56,7 @@ typedef struct
 } app_t;
 
 
-
+GLuint load_bmp(const char * imagepath);
 
 void gen_tile(GLuint elem_buf[2], vec3 col);
 
@@ -63,10 +68,14 @@ void draw_elems(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* a
 void read_glsl(GLuint* program_id, const char* glslv, const char* glslf);
 
 // fonction de rappel (regénération du contenu)
-void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2]);
+void display(GLFWwindow* window, const app_t* app, GLuint elem_buffer[5][2] , bool quad);
+
+bool display_setup(app_t* app);
 
 //set the viewport
-mat4 get_mvp(const app_t* app,mat4 matrix);
+mat4 get_mvp(const app_t* app,mat4 model);
+
+mat4 get_mv(const app_t* app,mat4 model);
 
 void set_vp(app_t* app);
 

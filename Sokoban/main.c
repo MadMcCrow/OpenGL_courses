@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         return 1;
     }
     init_player(&app.player, &app.level); 
-    init_pseudolight(&app, vec3_init(-1, 1, -1));
+    
     
     // we shouldn't need this, but somehow we do ... #ButWhy
     GLuint vao_id;
@@ -88,7 +88,6 @@ int main(int argc, char** argv)
     gen_tile(Elements[4],  vec3_init( 0.5, 0.5, 0.0 )); // Targets
     
     
-    //glDisable(GL_CULL_FACE);
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
@@ -98,7 +97,12 @@ int main(int argc, char** argv)
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     init_mvp(&app);
     
-
+    //make sure that render in a texture is possible
+    //bool quad_method = display_setup(&app);
+    app.texture[0] = load_bmp("img/metal.bmp");
+    app.texture[1] = load_bmp("img/pave.bmp");
+    app.texture[2] = load_bmp("img/brick.bmp");
+    app.texture[3] = load_bmp("img/player.bmp");
     
     glfwSetWindowUserPointer(window, &app);
     
@@ -108,15 +112,17 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         // start of a new frame:
-        double frame_time = glfwGetTime();
+        //double frame_time = glfwGetTime();
         
         // 1) camera setup
         //    make the cam be over the player
         cam_player(&app);
                 
-        //    make the map rotate endlessly ;)
-        //app.cam.loc = vec3_transform(mat4_rotate(0.01, app.cam.up), app.cam.loc);
-        //app.cam.look_at = vec3_init( 15, -15, 2);
+        //    or make the map rotate endlessly ;)
+        //app.cam.look_at = vec3_transform(mat4_rotate(0.1, app.cam.up), app.cam.look_at);
+        
+        // 1-bis) light setup
+        init_pseudolight(&app, vec3_init(20, -12.5, 50));
         
         // 2) game logic
         
@@ -140,10 +146,8 @@ int main(int argc, char** argv)
         glfwPollEvents(); 
         
         // 3) render setup
-        
-        set_vp(&app);
-        
-        display(window, &app, Elements);
+        set_vp(&app); // it's here only because I wanna make sure that display doesn't touch the app... but it's only because _I_ wanted it as a proof that app is a const in  a display function.
+        display(window, &app, Elements, false);
         
         // 4) debug and fps count
         //GLenum err = glGetError();

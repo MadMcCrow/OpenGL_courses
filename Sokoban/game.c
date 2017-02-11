@@ -63,6 +63,7 @@ void lvl_display(const level_t* lvl) {
 
 bool lvl_load(const char* name, level_t* level) {
 	FILE *fp = fopen(name, "r");
+    strcpy(level->name, name);
 	return fp && lvl_parse(level, fp);
 }
 
@@ -82,6 +83,7 @@ bool can_move(const level_t* level, int row, int col, dir_t dir, bool player) {
     if (cell.wall) return false;
     if (player && cell.box)
         return can_move(level, next_r, next_c, dir, false);
+    if (!player && cell.box) return false;
     return true;
 }
 

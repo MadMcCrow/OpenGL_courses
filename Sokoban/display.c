@@ -98,7 +98,6 @@ void gen_tile(GLuint elem_buf[2], vec3 col){
          0.50,  0.50, 0.00,  0.0, 0.0, 1.0,   col.r, col.g, col.b,   1,1,
          0.50, -0.50, 0.00,  0.0, 0.0, 1.0,   col.r, col.g, col.b,   1,0
     };
-
     static const GLuint indices[] = {
         2,3,0,0,3,1
     };
@@ -114,37 +113,35 @@ void gen_box(GLuint elem_buf[2], vec3 col){
     glGenBuffers(2, elem_buf);
     GLfloat box[] =
     {    
-        -0.500,  0.500,  0.01,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,0, // 0
-        -0.500, -0.500,  0.01,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,0, // 1
-        -0.500,  0.500,  1.01,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,1, // 2
-        -0.500, -0.500,  1.01,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,1, // 3
-                                                            
-         0.500,  0.500,  1.01,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,1, // 4
-         0.500, -0.500,  1.01,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,1, // 5
-         0.500,  0.500,  0.01,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,0, // 6
-         0.500, -0.500,  0.01,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,0, // 7
-                                                            
-        -0.500, -0.500,  1.01,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    0,1, // 8
-        -0.500, -0.500,  0.01,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    0,0, // 9
-         0.500, -0.500,  1.01,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    1,1, // 10
-         0.500, -0.500,  0.01,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    1,0, // 11
-                                                        
-        -0.500,  0.500,  0.01,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    0,0, // 12
-        -0.500,  0.500,  1.01,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    0,1, // 13
-         0.500,  0.500,  0.01,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    1,0, // 14
-         0.500,  0.500,  1.01,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    1,1, // 15
+        -0.500,  0.500,  0.00,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,0, // 0
+        -0.500, -0.500,  0.00,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,0, // 1
+        -0.500,  0.500,  1.00,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,1, // 2
+        -0.500, -0.500,  1.00,  -1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,1, // 3
                                                            
-         0.500,  0.500,  0.01,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    1,1, // 16
-         0.500, -0.500,  0.01,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    1,0, // 17
-        -0.500,  0.500,  0.01,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    0,1, // 18
-        -0.500, -0.500,  0.01,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    0,0, // 19
+         0.500,  0.500,  1.00,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,1, // 4
+         0.500, -0.500,  1.00,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,1, // 5
+         0.500,  0.500,  0.00,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    1,0, // 6
+         0.500, -0.500,  0.00,   1.0,  0.0,  0.0,    col.r, col.g, col.b,    0,0, // 7
                                                           
-        -0.500,  0.500,  1.01,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    0,1, // 20
-        -0.500, -0.500,  1.01,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    0,0, // 21
-         0.500,  0.500,  1.01,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    1,1, // 22
-         0.500, -0.500,  1.01,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    1,0  // 23
-        
-        
+        -0.500, -0.500,  1.00,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    0,1, // 8
+        -0.500, -0.500,  0.00,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    0,0, // 9
+         0.500, -0.500,  1.00,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    1,1, // 10
+         0.500, -0.500,  0.00,   0.0, -1.0,  0.0,    col.r, col.g, col.b,    1,0, // 11
+                                                       
+        -0.500,  0.500,  0.00,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    0,0, // 12
+        -0.500,  0.500,  1.00,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    0,1, // 13
+         0.500,  0.500,  0.00,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    1,0, // 14
+         0.500,  0.500,  1.00,   0.0,  1.0,  0.0,    col.r, col.g, col.b,    1,1, // 15
+                                                          
+         0.500,  0.500,  0.00,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    1,1, // 16
+         0.500, -0.500,  0.00,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    1,0, // 17
+        -0.500,  0.500,  0.00,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    0,1, // 18
+        -0.500, -0.500,  0.00,   0.0,  0.0, -1.0,    col.r, col.g, col.b,    0,0, // 19
+                                                        
+        -0.500,  0.500,  1.00,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    0,1, // 20
+        -0.500, -0.500,  1.00,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    0,0, // 21
+         0.500,  0.500,  1.00,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    1,1, // 22
+         0.500, -0.500,  1.00,   0.0,  0.0,  1.0,    col.r, col.g, col.b,    1,0  // 23
     };
 
     static const GLuint indices[] = {
@@ -192,7 +189,7 @@ void draw_elems(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* a
         GL_FLOAT,
         GL_FALSE,
         vertex_size,
-        (void*)(void*)(sizeof(float) * 3)
+        (void*)(sizeof(float) * 3)
     );
     glVertexAttribPointer(
         2,                          
@@ -200,7 +197,7 @@ void draw_elems(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* a
         GL_FLOAT,                  
         GL_FALSE,
         vertex_size,
-        (void*)(void*)(sizeof(float) * 6)
+        (void*)(sizeof(float) * 6)
     );
     glVertexAttribPointer(
         3,                          
@@ -208,7 +205,7 @@ void draw_elems(GLuint element_buffer[2], int n, vec3* array_pos ,const app_t* a
         GL_FLOAT,                  
         GL_FALSE,
         vertex_size,
-        (void*)(void*)(sizeof(float) * 9)
+        (void*)(sizeof(float) * 9)
     );
     
     // Rendu de notre géométrie
@@ -547,6 +544,9 @@ void cam_player (app_t* app) {
     double anglex = 0;
     double angley = 0;
     glfwGetCursorPos(app->window, &anglex, &angley);
+    anglex -= app->w/2;
+    angley -= app->h/2;
+    //glfwSetCursorPos(app->window, app->h/2, app->w/2);
     int x = 0;
     int y = 0;
      switch (app->player.forward){
@@ -555,10 +555,10 @@ void cam_player (app_t* app) {
         case DIR_LEFT:  x =  1; y =  0; break;
         case DIR_RIGHT: x = -1; y =  0; break;
     }
-    app->cam.loc       = vec3_init( app->player.col - 1.5 * x      ,  -1 * app->player.row  - 1.5 * y  , 6 );
+    app->cam.loc       = vec3_init( app->player.col - 1.2 * x      ,  -1 * app->player.row  - 1.2 * y  , 5 );
     app->cam.look_at   = vec3_init( app->player.col,  -1 * app->player.row, 0.0 );
     //rotate with the mouse ;)
-    //app->cam.look_at = vec3_transform(mat4_rotate(angle, app->cam.up),app->cam.look_at);
+    app->cam.look_at = vec3_transform(mat4_translate(vec3_init( 0.01 *anglex, 0.01 * angley, 0 )),app->cam.look_at);
 }
 
 

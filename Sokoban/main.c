@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <GL/gl.h>
 #include "readfiles.h"
 #include "Cglm/glutils.h"
 #include "Cglm/glmath.h"
@@ -20,40 +21,69 @@ void close_callback(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, 1);
 }
 
+void error_callback(int error, const char* description)
+{
+    puts(description);
+}
+
 int main(int argc, char** argv)
 {
+    app_t app;
     if (argc != 2) {
         printf("not enough arguments\n");
         return 1;
     }
+    
+     if (!lvl_load(argv[1], &app.level)) {
+        fprintf(stderr, "cannot load level\n");
+        return 1;
+    }
+    init_player(&app.player, &app.level);
+    
+    
+    glfwSetErrorCallback(error_callback);
     if (!glfwInit()) {
         fprintf(stderr, "ERROR: could not start GLFW3\n");
     return 1;
-    } 
+    }
+    
+    printf("been here");
     // 2) creation d'une fenetre
-    // version 3.3    
+    // version 3.3
+    glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
-    app_t app;
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
     app.h = 600;
     app.w = 800;
-
-    GLFWwindow* window = glfwCreateWindow(app.w, app.h, "Soko-Muslim-BAN ! - Trump wall ultimate version", NULL, NULL);
-    if (!window) {
+    
+    
+    
+    app.window = glfwCreateWindow(app.w, app.h, "Soko-Muslim-BAN ! - Trump wall ultimate version", NULL, NULL);
+    if (!app.window) {
         fprintf(stderr, "ERROR: could not open window with GLFW3\n");
         glfwTerminate();
     return 1;
    }
-    glfwSetWindowCloseCallback(window, close_callback);
-    glfwSetKeyCallback(window, key_callback);
-
-    glfwMakeContextCurrent(window);
+   
+   
+    glfwMakeContextCurrent(app.window);
+    glfwSetWindowCloseCallback(app.window, close_callback);
+    glfwSetKeyCallback(app.window, key_callback);
+   
+   
+    // Set the mouse at the center of the screen
+    glfwSetCursorPos(app.window, app.h/2, app.w/2);
+    glfwSetInputMode(app.window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+    
     glfwSwapInterval(1);
-    glewExperimental = 1;
+    glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
+        fprintf(stderr, "ERROR: could not start GLEW\n");
         glfwTerminate();
         return 1;
     }
@@ -64,13 +94,7 @@ int main(int argc, char** argv)
         glfwTerminate();
         return 1;
     }
-    
-    if (!lvl_load(argv[1], &app.level)) {
-        fprintf(stderr, "cannot load level\n");
-        return 1;
-    }
-    init_player(&app.player, &app.level); 
-    
+
     
     // we shouldn't need this, but somehow we do ... #ButWhy
     GLuint vao_id;
@@ -104,12 +128,12 @@ int main(int argc, char** argv)
     app.texture[2] = load_bmp("img/brick.bmp");
     app.texture[3] = load_bmp("img/player.bmp");
     
-    glfwSetWindowUserPointer(window, &app);
+    glfwSetWindowUserPointer(app.window, &app);
     
     //set up the in teture rendering.
     //ready_tex(&app);
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(app.window))
     {
         // start of a new frame:
         //double frame_time = glfwGetTime();
@@ -147,7 +171,7 @@ int main(int argc, char** argv)
         
         // 3) render setup
         set_vp(&app); // it's here only because I wanna make sure that display doesn't touch the app... but it's only because _I_ wanted it as a proof that app is a const in  a display function.
-        display(window, &app, Elements, false);
+        display(app.window, &app, Elements, false);
         
         // 4) debug and fps count
         //GLenum err = glGetError();
